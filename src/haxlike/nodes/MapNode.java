@@ -12,21 +12,18 @@ public class MapNode<T, R> implements Node<R> {
     Function<T, R> f;
 
     @Override
-    public List<Resolvable<?, ?>> allResolvables() {
+    public List<Resolvable<?>> allResolvables() {
         return inner.allResolvables();
     }
 
     @Override
-    public <V, I extends Resolvable<V, I>> Node<R> injectValue(
-        I resolvable,
-        V value
-    ) {
+    public <V> Node<R> injectValue(Resolvable<V> resolvable, V value) {
         return new MapNode<>(inner.injectValue(resolvable, value), f);
     }
 
     @Override
-    public boolean hasValue() {
-        return inner.hasValue();
+    public boolean isResolved() {
+        return inner.isResolved();
     }
 
     @Override

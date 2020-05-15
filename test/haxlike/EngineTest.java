@@ -8,16 +8,60 @@ import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+@Slf4j
 public class EngineTest {
+    Engine.Instance engine;
+
+    @BeforeEach
+    void setUp() {
+        engine =
+            Engine
+                .of(String.class)
+                .register(TestResolvable.class, EngineTest::testResolve)
+                .register(SlowResolvable.class, EngineTest::slowResolve)
+                .build("ENV");
+    }
+
+    private static CompletableFuture<List<Integer>> testResolve(
+        String env,
+        List<TestResolvable> batch
+    ) {
+        log.info("[resolve] {}", batch);
+        return CompletableFuture.completedFuture(
+            batch
+                .stream()
+                .map(TestResolvable::getValue)
+                .collect(Collectors.toList())
+        );
+    }
+
+    private static CompletableFuture<List<Integer>> slowResolve(
+        String env,
+        List<SlowResolvable> batch
+    ) {
+        return CompletableFuture.supplyAsync(
+            () -> {
+                log.info("[resolve] {}", batch);
+                try {
+                    Thread.sleep(2000);
+                } catch (InterruptedException e) {}
+                return batch
+                    .stream()
+                    .map(SlowResolvable::getValue)
+                    .collect(Collectors.toList());
+            }
+        );
+    }
 
     @Test
     void resolve_shouldResolveValueNode() {
         Node<Integer> node = value(1);
         Integer expected = 1;
 
-        assertThat(Engine.resolve(node)).isEqualTo(expected);
+        assertThat(engine.resolve(node)).isEqualTo(expected);
     }
 
     @Test
@@ -25,7 +69,7 @@ public class EngineTest {
         Node<Integer> node = value(1).map(x -> x + 1);
         Integer expected = 2;
 
-        assertThat(Engine.resolve(node)).isEqualTo(expected);
+        assertThat(engine.resolve(node)).isEqualTo(expected);
     }
 
     @Test
@@ -33,7 +77,7 @@ public class EngineTest {
         Node<Integer> node = value(1).map(x -> x + 1);
         Integer expected = 2;
 
-        assertThat(Engine.resolve(node)).isEqualTo(expected);
+        assertThat(engine.resolve(node)).isEqualTo(expected);
     }
 
     @Test
@@ -41,7 +85,7 @@ public class EngineTest {
         Node<Integer> node = new TestResolvable(1).map(x -> x + 1);
         Integer expected = 2;
 
-        assertThat(Engine.resolve(node)).isEqualTo(expected);
+        assertThat(engine.resolve(node)).isEqualTo(expected);
     }
 
     @Test
@@ -54,74 +98,37 @@ public class EngineTest {
         );
         List<Integer> expected = List.of(2, 2, 3, 3);
 
-        assertThat(Engine.resolve(node)).isEqualTo(expected);
+        assertThat(engine.resolve(node)).isEqualTo(expected);
     }
 
     @Test
     void resolve_shouldResolveWithNode() {
-        Node<Integer> node = sleep(1000, 1)
-            .with(promise(2))
+        Node<Integer> node = promise(1)
+            .with(slow(2))
             .map((a, b) -> a + b)
-            .with(list(promise(3), sleep(1000, 4)))
+            .with(list(promise(3), slow(4)))
             .flatMap((a, b) -> promise(a * b.get(0)));
         Integer expected = 9;
 
-        assertThat(Engine.resolve(node)).isEqualTo(expected);
+        assertThat(engine.resolve(node)).isEqualTo(expected);
     }
 
     // --- Test Resolvable
     @Value
-    @Slf4j
-    private static class TestResolvable
-        implements Resolvable<Integer, TestResolvable> {
+    private static class TestResolvable implements Resolvable<Integer> {
         Integer value;
-
-        @Override
-        public CompletableFuture<List<Integer>> resolveAll(
-            List<TestResolvable> batch
-        ) {
-            log.info("Resolving {} TestResolvables\n{}", batch.size(), batch);
-            return CompletableFuture.supplyAsync(
-                () ->
-                    batch
-                        .stream()
-                        .map(TestResolvable::getValue)
-                        .collect(Collectors.toList())
-            );
-        }
     }
 
     @Value
-    @Slf4j
-    private static class SleepResolvable
-        implements Resolvable<Integer, SleepResolvable> {
-        Integer ms;
+    private static class SlowResolvable implements Resolvable<Integer> {
         Integer value;
-
-        @Override
-        public CompletableFuture<List<Integer>> resolveAll(
-            List<SleepResolvable> batch
-        ) {
-            log.info("Resolving {} SleepResolvables\n{}", batch.size(), batch);
-            return CompletableFuture.supplyAsync(
-                () -> {
-                    try {
-                        Thread.sleep(ms);
-                    } catch (InterruptedException e) {}
-                    return batch
-                        .stream()
-                        .map(SleepResolvable::getValue)
-                        .collect(Collectors.toList());
-                }
-            );
-        }
     }
 
     private static Node<Integer> promise(int i) {
         return new TestResolvable(i);
     }
 
-    private static Node<Integer> sleep(int ms, int i) {
-        return new SleepResolvable(ms, i);
+    private static Node<Integer> slow(int i) {
+        return new SlowResolvable(i);
     }
 }

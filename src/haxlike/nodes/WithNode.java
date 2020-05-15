@@ -1,7 +1,8 @@
 package haxlike.nodes;
 
+import static haxlike.nodes.WithNode.Pair;
+
 import haxlike.Node;
-import haxlike.Nodes;
 import haxlike.Resolvable;
 import java.util.List;
 import java.util.function.BiFunction;
@@ -15,22 +16,24 @@ import lombok.Value;
  * @param <B> second value class
  */
 @Value
-public class WithNode<A, B> implements Node<WithNode<A, B>.Container> {
+public class WithNode<A, B> implements Node<Pair<A, B>> {
     Node<A> a;
     Node<B> b;
+    boolean resolved;
 
-    @Override
-    public boolean hasValue() {
-        return a.hasValue() && b.hasValue();
+    public WithNode(Node<A> a, Node<B> b) {
+        this.a = a;
+        this.b = b;
+        this.resolved = a.isResolved() && b.isResolved();
     }
 
     @Override
-    public Container getValue() {
-        return new Container(a.getValue(), b.getValue());
+    public Pair<A, B> getValue() {
+        return new Pair<>(a.getValue(), b.getValue());
     }
 
     @Override
-    public List<Resolvable<?, ?>> allResolvables() {
+    public List<Resolvable<?>> allResolvables() {
         return List
             .of(a, b)
             .stream()
@@ -39,36 +42,25 @@ public class WithNode<A, B> implements Node<WithNode<A, B>.Container> {
     }
 
     @Override
-    public <V, R extends Resolvable<V, R>> Node<Container> injectValue(
-        R resolvable,
-        V value
-    ) {
-        Node<A> resultA = a.injectValue(resolvable, value);
-        Node<B> resultB = b.injectValue(resolvable, value);
-
-        if (resultA.hasValue() && resultB.hasValue()) {
-            return Nodes.value(
-                new Container(resultA.getValue(), resultB.getValue())
-            );
-        }
-
-        return new WithNode<>(resultA, resultB);
+    public <V> Node<Pair<A, B>> injectValue(Resolvable<V> resolvable, V value) {
+        WithNode<A, B> newNode = new WithNode<>(
+            a.injectValue(resolvable, value),
+            b.injectValue(resolvable, value)
+        );
+        return ValueNode.ifResolved(newNode);
     }
 
     public <R> Node<R> map(BiFunction<A, B, R> f) {
-        return this.map(
-                container -> f.apply(container.getA(), container.getB())
-            );
+        return this.map(pair -> f.apply(pair.getA(), pair.getB()));
     }
 
     public <R> Node<R> flatMap(BiFunction<A, B, Node<R>> f) {
-        return this.flatMap(
-                container -> f.apply(container.getA(), container.getB())
-            );
+        return this.flatMap(pair -> f.apply(pair.getA(), pair.getB()));
     }
 
+    // --- Pair, container for tuple
     @Value
-    public class Container {
+    public static class Pair<A, B> {
         A a;
         B b;
     }
