@@ -59,8 +59,8 @@ public class EngineTest {
 
     @Test
     void resolve_shouldResolveWithNode() {
-        Node<Integer> node = promise(1)
-            .with(sleep(1000, 2))
+        Node<Integer> node = sleep(1000, 1)
+            .with(promise(2))
             .map((a, b) -> a + b)
             .with(list(promise(3), sleep(1000, 4)))
             .flatMap((a, b) -> promise(a * b.get(0)));

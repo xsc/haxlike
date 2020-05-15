@@ -30,6 +30,8 @@ public class Engine {
     ) {
         return selectBatches(node)
             .map(Engine::resolveBatch)
+            .collect(Collectors.toList())
+            .stream()
             .reduce(node, (n, p) -> p.join(n), (a, b) -> b);
     }
 
