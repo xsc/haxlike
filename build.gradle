@@ -1,0 +1,41 @@
+plugins {
+  id 'groovy'
+  id 'java'
+  id 'com.adarshr.test-logger' version '2.0.0'
+  id 'io.freefair.lombok'      version '5.0.1'
+}
+
+group 'haxlike'
+version = '1.0.0-SNAPSHOT'
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+    jcenter()
+}
+
+dependencies {
+  implementation "ch.qos.logback:logback-classic:1.2.3"
+  testImplementation "org.assertj:assertj-core:3.14.0"
+  testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.0'
+  testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
+}
+
+sourceSets {
+  main {
+    java {
+      srcDirs = ['src']
+    }
+  }
+  test {
+    java {
+      srcDirs = ['test']
+    }
+  }
+}
+
+test {
+  useJUnitPlatform {
+    includeEngines "junit-jupiter"
+  }
+}

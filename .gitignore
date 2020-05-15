@@ -1,0 +1,6 @@
+.gradle
+build
+.vscode
+.classpath
+.settings
+node_modules
