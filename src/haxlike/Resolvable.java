@@ -1,13 +1,14 @@
 package haxlike;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Class representing an unresolved value.
  */
 public interface Resolvable<T, R extends Resolvable<T, R>>
     extends Node.WithoutValue<T> {
-    List<T> resolveAll(List<R> batch);
+    CompletableFuture<List<T>> resolveAll(List<R> batch);
 
     @Override
     default List<Resolvable<?, ?>> allResolvables() {

@@ -4,8 +4,10 @@ import static haxlike.Nodes.*;
 import static org.assertj.core.api.Assertions.*;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import lombok.Value;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 
 public class EngineTest {
@@ -57,11 +59,11 @@ public class EngineTest {
 
     @Test
     void resolve_shouldResolveWithNode() {
-        Node<Integer> node = value(1)
-            .with(promise(2))
+        Node<Integer> node = promise(1)
+            .with(sleep(1000, 2))
             .map((a, b) -> a + b)
-            .with(value(3))
-            .flatMap((a, b) -> promise(a * b));
+            .with(list(promise(3), sleep(1000, 4)))
+            .flatMap((a, b) -> promise(a * b.get(0)));
         Integer expected = 9;
 
         assertThat(Engine.resolve(node)).isEqualTo(expected);
@@ -69,21 +71,57 @@ public class EngineTest {
 
     // --- Test Resolvable
     @Value
+    @Slf4j
     private static class TestResolvable
         implements Resolvable<Integer, TestResolvable> {
         Integer value;
 
         @Override
-        public List<Integer> resolveAll(List<TestResolvable> batch) {
-            System.out.printf("resolving %d TestResolvables%n", batch.size());
-            return batch
-                .stream()
-                .map(TestResolvable::getValue)
-                .collect(Collectors.toList());
+        public CompletableFuture<List<Integer>> resolveAll(
+            List<TestResolvable> batch
+        ) {
+            log.info("Resolving {} TestResolvables\n{}", batch.size(), batch);
+            return CompletableFuture.supplyAsync(
+                () ->
+                    batch
+                        .stream()
+                        .map(TestResolvable::getValue)
+                        .collect(Collectors.toList())
+            );
+        }
+    }
+
+    @Value
+    @Slf4j
+    private static class SleepResolvable
+        implements Resolvable<Integer, SleepResolvable> {
+        Integer ms;
+        Integer value;
+
+        @Override
+        public CompletableFuture<List<Integer>> resolveAll(
+            List<SleepResolvable> batch
+        ) {
+            log.info("Resolving {} SleepResolvables\n{}", batch.size(), batch);
+            return CompletableFuture.supplyAsync(
+                () -> {
+                    try {
+                        Thread.sleep(ms);
+                    } catch (InterruptedException e) {}
+                    return batch
+                        .stream()
+                        .map(SleepResolvable::getValue)
+                        .collect(Collectors.toList());
+                }
+            );
         }
     }
 
     private static Node<Integer> promise(int i) {
         return new TestResolvable(i);
+    }
+
+    private static Node<Integer> sleep(int ms, int i) {
+        return new SleepResolvable(ms, i);
     }
 }
