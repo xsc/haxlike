@@ -12,6 +12,13 @@ public interface Resolvable<T> extends Node<T> {
     }
 
     @Override
+    default T getValue() {
+        throw new UnsupportedOperationException(
+            "Cannot call 'getValue' on Resolvable."
+        );
+    }
+
+    @Override
     default List<Resolvable<?>> getResolvables() {
         return List.single(this);
     }
