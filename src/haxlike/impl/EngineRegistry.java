@@ -1,21 +1,18 @@
 package haxlike.impl;
 
+import fj.Ord;
+import fj.data.TreeMap;
 import haxlike.Resolvable;
 import haxlike.Resolver;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
 
 final class EngineRegistry<E> {
-    private final Map<Class<? extends Resolvable<?>>, Resolver<E, ?, ?>> resolvers;
+    private final TreeMap<String, Resolver<E, ?, ?>> resolvers;
 
     public EngineRegistry() {
-        this(new HashMap<>());
+        this(TreeMap.empty(Ord.stringOrd));
     }
 
-    private EngineRegistry(
-        Map<Class<? extends Resolvable<?>>, Resolver<E, ?, ?>> resolvers
-    ) {
+    private EngineRegistry(TreeMap<String, Resolver<E, ?, ?>> resolvers) {
         this.resolvers = resolvers;
     }
 
@@ -23,19 +20,21 @@ final class EngineRegistry<E> {
         Class<R> cls,
         Resolver<E, V, R> resolver
     ) {
-        final Map<Class<? extends Resolvable<?>>, Resolver<E, ?, ?>> copy = new HashMap<>(
-            resolvers
-        );
-        copy.put(cls, resolver);
-        return new EngineRegistry<>(copy);
+        return new EngineRegistry<>(resolvers.set(cls.getName(), resolver));
     }
 
     @SuppressWarnings("unchecked")
-    public <V, R extends Resolvable<V>> Optional<Resolver<E, V, R>> get(
+    public <V, R extends Resolvable<V>> Resolver<E, V, R> getOrThrow(
         Class<R> cls
     ) {
-        return Optional
-            .ofNullable(resolvers.get(cls))
-            .map(r -> (Resolver<E, V, R>) r);
+        return (Resolver<E, V, R>) resolvers
+            .get(cls.getName())
+            .orSome(
+                () -> {
+                    throw new IllegalStateException(
+                        "No resolver for class: " + cls.getName()
+                    );
+                }
+            );
     }
 }

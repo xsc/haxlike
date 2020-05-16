@@ -1,9 +1,9 @@
 package haxlike;
 
+import fj.data.List;
 import haxlike.nodes.ListNode;
+import haxlike.nodes.PairNode;
 import haxlike.nodes.ValueNode;
-import haxlike.nodes.WithNode;
-import java.util.List;
 
 public class Nodes {
 
@@ -26,7 +26,7 @@ public class Nodes {
     @SafeVarargs
     @SuppressWarnings("varargs")
     public static <T> Node<List<T>> list(Node<T>... elements) {
-        return new ListNode<>(List.of(elements));
+        return new ListNode<>(List.arrayList(elements));
     }
 
     /**
@@ -37,8 +37,8 @@ public class Nodes {
      * @param b second value
      * @return node representing the pair of values
      */
-    public static <A, B> WithNode<A, B> with(Node<A> a, Node<B> b) {
-        return new WithNode<>(a, b);
+    public static <A, B> PairNode<A, B> with(Node<A> a, Node<B> b) {
+        return new PairNode<>(a, b);
     }
 
     private Nodes() {}

@@ -1,19 +1,19 @@
 package haxlike.nodes;
 
+import fj.F;
+import fj.data.List;
 import haxlike.Node;
 import haxlike.Resolvable;
-import java.util.List;
-import java.util.function.Function;
 import lombok.Value;
 
 @Value
 public class MapNode<T, R> implements Node<R> {
     Node<T> inner;
-    Function<T, R> f;
+    F<T, R> f;
 
     @Override
-    public List<Resolvable<?>> allResolvables() {
-        return inner.allResolvables();
+    public List<Resolvable<?>> getResolvables() {
+        return inner.getResolvables();
     }
 
     @Override
@@ -28,6 +28,6 @@ public class MapNode<T, R> implements Node<R> {
 
     @Override
     public R getValue() {
-        return f.apply(inner.getValue());
+        return f.f(inner.getValue());
     }
 }

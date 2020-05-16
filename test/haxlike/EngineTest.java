@@ -3,9 +3,7 @@ package haxlike;
 import static haxlike.Nodes.*;
 import static org.assertj.core.api.Assertions.*;
 
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
+import fj.data.List;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,47 +11,35 @@ import org.junit.jupiter.api.Test;
 
 @Slf4j
 public class EngineTest {
-    Engine.Instance engine;
+    Engine engine;
 
     @BeforeEach
     void setUp() {
         engine =
-            Engine
+            EngineBuilder
                 .of(String.class)
-                .register(TestResolvable.class, EngineTest::testResolve)
-                .register(SlowResolvable.class, EngineTest::slowResolve)
+                .withResolver(TestResolvable.class, EngineTest::testResolve)
+                .withResolver(SlowResolvable.class, EngineTest::slowResolve)
                 .build("ENV");
     }
 
-    private static CompletableFuture<List<Integer>> testResolve(
+    private static List<Integer> testResolve(
         String env,
         List<TestResolvable> batch
     ) {
         log.info("[resolve] {}", batch);
-        return CompletableFuture.completedFuture(
-            batch
-                .stream()
-                .map(TestResolvable::getValue)
-                .collect(Collectors.toList())
-        );
+        return batch.map(TestResolvable::getValue);
     }
 
-    private static CompletableFuture<List<Integer>> slowResolve(
+    private static List<Integer> slowResolve(
         String env,
         List<SlowResolvable> batch
     ) {
-        return CompletableFuture.supplyAsync(
-            () -> {
-                log.info("[resolve] {}", batch);
-                try {
-                    Thread.sleep(2000);
-                } catch (InterruptedException e) {}
-                return batch
-                    .stream()
-                    .map(SlowResolvable::getValue)
-                    .collect(Collectors.toList());
-            }
-        );
+        log.info("[resolve] {}", batch);
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {}
+        return batch.map(SlowResolvable::getValue);
     }
 
     @Test
@@ -96,7 +82,7 @@ public class EngineTest {
             new TestResolvable(3),
             new TestResolvable(3)
         );
-        List<Integer> expected = List.of(2, 2, 3, 3);
+        List<Integer> expected = List.arrayList(2, 2, 3, 3);
 
         assertThat(engine.resolve(node)).isEqualTo(expected);
     }
@@ -107,7 +93,7 @@ public class EngineTest {
             .with(slow(2))
             .map((a, b) -> a + b)
             .with(list(promise(3), slow(4)))
-            .flatMap((a, b) -> promise(a * b.get(0)));
+            .flatMap((a, b) -> promise(a * b.index(0)));
         Integer expected = 9;
 
         assertThat(engine.resolve(node)).isEqualTo(expected);

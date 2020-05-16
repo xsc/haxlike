@@ -1,6 +1,6 @@
 package haxlike;
 
-import java.util.List;
+import fj.data.List;
 
 /**
  * Class representing an unresolved value.
@@ -12,8 +12,8 @@ public interface Resolvable<T> extends Node<T> {
     }
 
     @Override
-    default List<Resolvable<?>> allResolvables() {
-        return List.of(this);
+    default List<Resolvable<?>> getResolvables() {
+        return List.single(this);
     }
 
     @Override

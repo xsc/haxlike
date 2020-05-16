@@ -1,8 +1,8 @@
 package haxlike.nodes;
 
+import fj.data.List;
 import haxlike.Node;
 import haxlike.Resolvable;
-import java.util.List;
 import lombok.Value;
 
 @Value
@@ -15,8 +15,8 @@ public class ValueNode<T> implements Node<T> {
     }
 
     @Override
-    public List<Resolvable<?>> allResolvables() {
-        return List.of();
+    public List<Resolvable<?>> getResolvables() {
+        return List.nil();
     }
 
     @Override
