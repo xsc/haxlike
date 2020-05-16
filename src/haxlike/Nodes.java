@@ -1,5 +1,6 @@
 package haxlike;
 
+import fj.F;
 import fj.data.List;
 import haxlike.nodes.ListNode;
 import haxlike.nodes.PairNode;
@@ -39,6 +40,22 @@ public class Nodes {
      */
     public static <A, B> PairNode<A, B> with(Node<A> a, Node<B> b) {
         return new PairNode<>(a, b);
+    }
+
+    /**
+     * Apply the given function to every element of the list contained in the
+     * given node, resulting in a list of nodes to resolve.
+     * @param <T> element class
+     * @param <R> result element class
+     * @param node node to apply function to
+     * @param f function to appy
+     * @return a new node containing the list of mapped elements
+     */
+    public static <T, R> Node<List<R>> traverse(
+        Node<List<T>> node,
+        F<T, Node<R>> f
+    ) {
+        return node.map(elements -> elements.map(f)).flatMap(ListNode::new);
     }
 
     private Nodes() {}

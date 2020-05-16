@@ -100,6 +100,15 @@ public class EngineTest {
         assertThat(engine.resolve(node)).isEqualTo(expected);
     }
 
+    @Test
+    void resolve_shouldResolveTraverse() {
+        Node<Integer> node = traverse(list(slow(1), slow(2)), EngineTest::slow)
+            .map(l -> l.foldLeft((a, b) -> a + b, 0));
+        Integer expected = 3;
+
+        assertThat(engine.resolve(node)).isEqualTo(expected);
+    }
+
     // --- Test Resolvable
     @Value
     private static class TestResolvable implements Resolvable<Integer> {
