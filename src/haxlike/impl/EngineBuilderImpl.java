@@ -33,7 +33,7 @@ public class EngineBuilderImpl<E> implements EngineBuilder<E> {
 
     @Override
     public EngineBuilder<E> withStrategy(Strategy<?> s) {
-        return new EngineBuilderImpl<>();
+        return new EngineBuilderImpl<>(registry, s);
     }
 
     @Override

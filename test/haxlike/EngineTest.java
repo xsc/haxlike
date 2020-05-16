@@ -20,6 +20,7 @@ public class EngineTest {
                 .of(String.class)
                 .withResolver(TestResolvable.class, EngineTest::testResolve)
                 .withResolver(SlowResolvable.class, EngineTest::slowResolve)
+                .withCommonForkJoinPool()
                 .build("ENV");
     }
 
