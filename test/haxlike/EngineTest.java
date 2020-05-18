@@ -91,11 +91,10 @@ public class EngineTest {
     @Test
     void resolve_shouldResolveWithNode() {
         Node<Integer> node = promise(1)
-            .with(slow(2))
-            .map((a, b) -> a + b)
-            .with(list(promise(3), slow(4)))
-            .flatMap((a, b) -> promise(a * b.index(0)));
-        Integer expected = 9;
+            .map((a, b) -> a + b, slow(2))
+            .map((a, b) -> a * b, promise(3))
+            .flatMap((a, b, c) -> promise(a * b * c), promise(4), slow(1));
+        Integer expected = 36;
 
         assertThat(engine.resolve(node)).isEqualTo(expected);
     }
