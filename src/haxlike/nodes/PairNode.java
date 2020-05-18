@@ -4,6 +4,7 @@ import static fj.P.p;
 
 import fj.F2;
 import fj.P2;
+import fj.data.HashMap;
 import fj.data.List;
 import haxlike.Node;
 import haxlike.Resolvable;
@@ -40,10 +41,10 @@ public class PairNode<A, B> implements Node<P2<A, B>> {
     }
 
     @Override
-    public <V> Node<P2<A, B>> injectValue(Resolvable<V> resolvable, V value) {
+    public <V> Node<P2<A, B>> injectValues(HashMap<Resolvable<V>, V> results) {
         PairNode<A, B> newNode = new PairNode<>(
-            a.injectValue(resolvable, value),
-            b.injectValue(resolvable, value)
+            a.injectValues(results),
+            b.injectValues(results)
         );
         return ValueNode.ifResolved(newNode);
     }

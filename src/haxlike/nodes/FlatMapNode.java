@@ -1,6 +1,7 @@
 package haxlike.nodes;
 
 import fj.F;
+import fj.data.HashMap;
 import fj.data.List;
 import haxlike.Node;
 import haxlike.Resolvable;
@@ -17,8 +18,8 @@ public class FlatMapNode<T, R> implements Node<R> {
     }
 
     @Override
-    public <V> Node<R> injectValue(Resolvable<V> resolvable, V value) {
-        final Node<T> result = inner.injectValue(resolvable, value);
+    public <V> Node<R> injectValues(HashMap<Resolvable<V>, V> results) {
+        final Node<T> result = inner.injectValues(results);
         return result.isResolved()
             ? f.f(result.getValue())
             : new FlatMapNode<>(result, f);

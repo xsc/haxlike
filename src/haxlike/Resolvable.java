@@ -1,6 +1,8 @@
 package haxlike;
 
+import fj.data.HashMap;
 import fj.data.List;
+import haxlike.nodes.ValueNode;
 
 /**
  * Class representing an unresolved value.
@@ -25,10 +27,11 @@ public interface Resolvable<T> extends Node<T> {
 
     @Override
     @SuppressWarnings("unchecked")
-    default <V> Node<T> injectValue(Resolvable<V> resolvable, V value) {
-        if (this.equals(resolvable)) {
-            return Nodes.value((T) value);
-        }
-        return this;
+    default <V> Node<T> injectValues(HashMap<Resolvable<V>, V> results) {
+        return results
+            .get((Resolvable<V>) this)
+            .map(value -> (T) value)
+            .<Node<T>>map(ValueNode::new)
+            .orSome(() -> this);
     }
 }

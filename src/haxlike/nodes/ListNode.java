@@ -1,5 +1,6 @@
 package haxlike.nodes;
 
+import fj.data.HashMap;
 import fj.data.List;
 import haxlike.Node;
 import haxlike.Resolvable;
@@ -21,9 +22,9 @@ public class ListNode<T> implements Node<List<T>> {
     }
 
     @Override
-    public <V> Node<List<T>> injectValue(Resolvable<V> resolvable, V value) {
+    public <V> Node<List<T>> injectValues(HashMap<Resolvable<V>, V> results) {
         final ListNode<T> newNode = new ListNode<>(
-            elements.map(node -> node.injectValue(resolvable, value))
+            elements.map(node -> node.injectValues(results))
         );
 
         return ValueNode.ifResolved(newNode);

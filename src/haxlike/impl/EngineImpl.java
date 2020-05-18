@@ -2,6 +2,7 @@ package haxlike.impl;
 
 import fj.Ord;
 import fj.control.parallel.Strategy;
+import fj.data.HashMap;
 import fj.data.List;
 import haxlike.Engine;
 import haxlike.Node;
@@ -36,9 +37,12 @@ class EngineImpl<E> implements Engine {
         final List<Operation<R, V>> operations = batches.bind(
             this::createOperations
         );
+        final List<Result<R, V>> resultList = runOperations(operations);
 
-        return runOperations(operations)
-            .foldLeft(EngineImpl::injectOperationResult, node);
+        final HashMap<Resolvable<V>, V> results = HashMap.hashMap();
+        resultList.forEach(r -> results.set(r.getResolvable(), r.getValue()));
+
+        return node.injectValues(results);
     }
 
     @SuppressWarnings("unchecked")
@@ -86,21 +90,5 @@ class EngineImpl<E> implements Engine {
         final Class<R> cls = (Class<R>) batch.index(0).getClass();
         final EngineResolver<E, V, R> resolver = registry.getOrThrow(cls);
         return resolver.createOperations(environment, batch);
-    }
-
-    /**
-     * Inject every result of the given batch into the given node.
-     * @param <V> value class
-     * @param <R> resolvable class
-     * @param <T> target class
-     * @param node the node to inject into
-     * @param batch the batch future
-     * @return a node that every element was injected into.
-     */
-    private static <V, R extends Resolvable<V>, T> Node<T> injectOperationResult(
-        Node<T> node,
-        Result<R, V> result
-    ) {
-        return node.injectValue(result.getResolvable(), result.getValue());
     }
 }

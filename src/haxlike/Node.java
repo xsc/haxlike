@@ -1,6 +1,7 @@
 package haxlike;
 
 import fj.F;
+import fj.data.HashMap;
 import fj.data.List;
 import haxlike.nodes.*;
 
@@ -9,7 +10,7 @@ public interface Node<T> {
     boolean isResolved();
     T getValue();
     List<Resolvable<?>> getResolvables();
-    <V> Node<T> injectValue(Resolvable<V> resolvable, V value);
+    <V> Node<T> injectValues(HashMap<Resolvable<V>, V> results);
 
     // --- Functions
     default <R> Node<R> map(F<T, R> f) {
