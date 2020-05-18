@@ -21,7 +21,7 @@ public class FullTest {
             .build(new Env());
 
         final Node<List<Comment>> node = traverse(
-                AllPosts.node(),
+                AllPosts.NODE,
                 post -> PostComments.of(post.getId())
             )
             .map(allComments -> allComments.bind(l -> l));
@@ -55,7 +55,11 @@ public class FullTest {
 
     // --- Resolvables
     @Value(staticConstructor = "node")
-    public static class AllPosts implements Resolvable<List<Post>> {}
+    public static class AllPosts implements Resolvable<List<Post>> {
+        static final AllPosts NODE = new AllPosts();
+
+        private AllPosts() {}
+    }
 
     @Value(staticConstructor = "of")
     public static class PostComments implements Resolvable<List<Comment>> {
@@ -63,10 +67,10 @@ public class FullTest {
     }
 
     // --- Resolvers
-    public static List<List<Post>> fetchAllPosts(Env env, List<AllPosts> rs) {
+    public static List<Post> fetchAllPosts(Env env, AllPosts r) {
         log.info("Resolving all posts...");
         env.simulateDelay();
-        return rs.map(r -> List.range(0, 4).map(i -> new Post(i)));
+        return List.range(0, 4).map(i -> new Post(i));
     }
 
     public static List<List<Comment>> fetchComments(

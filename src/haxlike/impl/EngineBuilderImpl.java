@@ -5,6 +5,7 @@ import haxlike.Engine;
 import haxlike.EngineBuilder;
 import haxlike.Resolvable;
 import haxlike.Resolver;
+import haxlike.SingleResolver;
 import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
@@ -26,7 +27,18 @@ public class EngineBuilderImpl<E> implements EngineBuilder<E> {
         Resolver<E, V, R> resolver
     ) {
         return new EngineBuilderImpl<>(
-            registry.register(cls, resolver),
+            registry.register(cls, EngineResolver.from(resolver)),
+            strategy
+        );
+    }
+
+    @Override
+    public <V, R extends Resolvable<V>> EngineBuilder<E> withResolver(
+        Class<R> cls,
+        SingleResolver<E, V, R> resolver
+    ) {
+        return new EngineBuilderImpl<>(
+            registry.register(cls, EngineResolver.from(resolver)),
             strategy
         );
     }

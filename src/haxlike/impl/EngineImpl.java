@@ -1,15 +1,13 @@
 package haxlike.impl;
 
-import static fj.P.p;
-
 import fj.Ord;
-import fj.P2;
 import fj.control.parallel.Strategy;
 import fj.data.List;
 import haxlike.Engine;
 import haxlike.Node;
 import haxlike.Resolvable;
-import haxlike.Resolver;
+import haxlike.impl.EngineResolver.Operation;
+import haxlike.impl.EngineResolver.Result;
 import lombok.Value;
 
 @Value
@@ -33,14 +31,25 @@ class EngineImpl<E> implements Engine {
      * @param node node to resolve
      * @return a node with elements resolved
      */
-    @SuppressWarnings("unchecked")
     private <T, V, R extends Resolvable<V>> Node<T> resolveNext(Node<T> node) {
         final List<List<R>> batches = selectNextBatches(node);
-        return ((Strategy<P2<List<R>, List<V>>>) strategy).parMap1(
-                this::resolveBatch,
-                batches
+        final List<Operation<R, V>> operations = batches.bind(
+            this::createOperations
+        );
+
+        return runOperations(operations)
+            .foldLeft(EngineImpl::injectOperationResult, node);
+    }
+
+    @SuppressWarnings("unchecked")
+    private <V, R extends Resolvable<V>> List<Result<R, V>> runOperations(
+        List<Operation<R, V>> operations
+    ) {
+        return ((Strategy<List<Result<R, V>>>) strategy).parMap1(
+                Operation::runOperation,
+                operations
             )
-            .foldLeft(EngineImpl::injectBatch, node);
+            .bind(l -> l);
     }
 
     /**
@@ -71,12 +80,12 @@ class EngineImpl<E> implements Engine {
      * @return a future representing the resolution
      */
     @SuppressWarnings("unchecked")
-    private <V, R extends Resolvable<V>> P2<List<R>, List<V>> resolveBatch(
-        List<R> resolvables
+    private <V, R extends Resolvable<V>> List<Operation<R, V>> createOperations(
+        List<R> batch
     ) {
-        final Class<R> cls = (Class<R>) resolvables.index(0).getClass();
-        final Resolver<E, V, R> resolver = registry.getOrThrow(cls);
-        return p(resolvables, resolver.resolveAll(environment, resolvables));
+        final Class<R> cls = (Class<R>) batch.index(0).getClass();
+        final EngineResolver<E, V, R> resolver = registry.getOrThrow(cls);
+        return resolver.createOperations(environment, batch);
     }
 
     /**
@@ -88,15 +97,10 @@ class EngineImpl<E> implements Engine {
      * @param batch the batch future
      * @return a node that every element was injected into.
      */
-    private static <V, R extends Resolvable<V>, T> Node<T> injectBatch(
+    private static <V, R extends Resolvable<V>, T> Node<T> injectOperationResult(
         Node<T> node,
-        P2<List<R>, List<V>> batch
+        Result<R, V> result
     ) {
-        final List<R> resolvables = batch._1();
-        final List<V> values = batch._2();
-
-        return resolvables
-            .zip(values)
-            .foldLeft((n, p) -> n.injectValue(p._1(), p._2()), node);
+        return node.injectValue(result.getResolvable(), result.getValue());
     }
 }
