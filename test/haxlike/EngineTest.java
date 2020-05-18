@@ -95,7 +95,6 @@ public class EngineTest {
             .map((a, b) -> a * b, promise(3))
             .flatMap((a, b, c) -> promise(a * b * c), promise(4), slow(1));
         Integer expected = 36;
-
         assertThat(engine.resolve(node)).isEqualTo(expected);
     }
 

@@ -36,4 +36,9 @@ public class FlatMapNode<T, R> implements Node<R> {
             "Cannot call 'getValue' on flatMap node."
         );
     }
+
+    @Override
+    public String toString() {
+        return "flatMap(\n" + Printer.indent(inner.toString()) + "\n)";
+    }
 }

@@ -28,4 +28,9 @@ public class ValueNode<T> implements Node<T> {
     public static <V> Node<V> ifResolved(Node<V> node) {
         return node.isResolved() ? new ValueNode<>(node.getValue()) : node;
     }
+
+    @Override
+    public String toString() {
+        return value.toString();
+    }
 }

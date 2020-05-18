@@ -34,4 +34,18 @@ public class ListNode<T> implements Node<List<T>> {
     public List<T> getValue() {
         return elements.map(Node::getValue);
     }
+
+    @Override
+    public String toString() {
+        return (
+            "[\n" +
+            Printer.indent(
+                String.join(
+                    ",\n  ",
+                    elements.map(Object::toString).toJavaList()
+                )
+            ) +
+            "\n]"
+        );
+    }
 }

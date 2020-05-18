@@ -34,4 +34,9 @@ public class TupleNode implements Node<List<?>> {
     public List<?> getValue() {
         return elements.map(Node::getValue);
     }
+
+    @Override
+    public String toString() {
+        return String.join(",\n", elements.map(Object::toString).toJavaList());
+    }
 }
