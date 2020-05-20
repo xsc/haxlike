@@ -15,7 +15,7 @@ public class FullTest {
     void engine_shouldResolveCorrectly() {
         final Engine engine = EngineBuilder
             .of(Env.class)
-            .withResolver(AllPosts.class, FullTest::fetchAllPosts)
+            .withSingleResolvable(AllPosts.class)
             .withResolver(PostComments.class, FullTest::fetchComments)
             .withCommonForkJoinPool()
             .build(new Env());
@@ -55,8 +55,17 @@ public class FullTest {
 
     // --- Resolvables
     @Value(staticConstructor = "node")
-    public static class AllPosts implements Resolvable<List<Post>> {
+    public static class AllPosts
+        implements
+            Resolvable<List<Post>>, Resolver.Single<Env, List<Post>, AllPosts> {
         static final AllPosts NODE = new AllPosts();
+
+        @Override
+        public List<Post> resolve(Env env, AllPosts resolvable) {
+            log.info("Resolving all posts...");
+            env.simulateDelay();
+            return List.range(0, 4).map(i -> new Post(i));
+        }
 
         private AllPosts() {}
     }
@@ -67,12 +76,6 @@ public class FullTest {
     }
 
     // --- Resolvers
-    public static List<Post> fetchAllPosts(Env env, AllPosts r) {
-        log.info("Resolving all posts...");
-        env.simulateDelay();
-        return List.range(0, 4).map(i -> new Post(i));
-    }
-
     public static List<List<Comment>> fetchComments(
         Env env,
         List<PostComments> rs

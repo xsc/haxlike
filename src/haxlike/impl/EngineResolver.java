@@ -4,7 +4,6 @@ import fj.P2;
 import fj.data.List;
 import haxlike.Resolvable;
 import haxlike.Resolver;
-import haxlike.SingleResolver;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
 
@@ -31,25 +30,54 @@ interface EngineResolver<E, V, R extends Resolvable<V>> {
     List<Operation<R, V>> createOperations(E env, List<R> batch);
 
     static <E, V, R extends Resolvable<V>> EngineResolver<E, V, R> from(
-        Resolver<E, V, R> r
+        Resolver.Batched<E, V, R> r
     ) {
-        return (env, batch) ->
-            List.single(
-                () -> batch.zip(r.resolveAll(env, batch)).map(Result::new)
-            );
+        return (env, batch) -> runBatchedResolver(r, env, batch);
     }
 
-    static <E, V, R extends Resolvable<V>> EngineResolver<E, V, R> from(
-        SingleResolver<E, V, R> r
+    @SuppressWarnings("squid:S1172")
+    static <E, V, R extends Resolvable<V> & Resolver.Batched<E, V, R>> EngineResolver<E, V, R> from(
+        Class<R> cls
     ) {
-        return (env, batch) ->
-            batch.map(
-                resolvable ->
-                    () ->
-                        List.single(
-                            new Result<>(resolvable, r.resolve(env, resolvable))
-                        )
-            );
+        return (env, batch) -> runBatchedResolver(batch.head(), env, batch);
+    }
+
+    static <E, V, R extends Resolvable<V>> EngineResolver<E, V, R> fromSingle(
+        Resolver.Single<E, V, R> r
+    ) {
+        return (env, batch) -> runSingleResolver(r, env, batch);
+    }
+
+    @SuppressWarnings("squid:S1172")
+    static <E, V, R extends Resolvable<V> & Resolver.Single<E, V, R>> EngineResolver<E, V, R> fromSingle(
+        Class<R> cls
+    ) {
+        return (env, batch) -> runSingleResolver(batch.head(), env, batch);
+    }
+
+    // --- Helpers
+    static <E, V, R extends Resolvable<V>> List<Operation<R, V>> runBatchedResolver(
+        Resolver.Batched<E, V, R> r,
+        E env,
+        List<R> batch
+    ) {
+        return List.single(
+            () -> batch.zip(r.resolveAll(env, batch)).map(Result::new)
+        );
+    }
+
+    static <E, V, R extends Resolvable<V>> List<Operation<R, V>> runSingleResolver(
+        Resolver.Single<E, V, R> r,
+        E env,
+        List<R> batch
+    ) {
+        return batch.map(
+            resolvable ->
+                () ->
+                    List.single(
+                        new Result<>(resolvable, r.resolve(env, resolvable))
+                    )
+        );
     }
 
     // --- Give names to things

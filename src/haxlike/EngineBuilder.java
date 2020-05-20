@@ -23,7 +23,7 @@ public interface EngineBuilder<E> {
      */
     <V, R extends Resolvable<V>> EngineBuilder<E> withResolver(
         Class<R> cls,
-        Resolver<E, V, R> resolver
+        Resolver.Batched<E, V, R> resolver
     );
 
     /**
@@ -36,7 +36,33 @@ public interface EngineBuilder<E> {
      */
     <V, R extends Resolvable<V>> EngineBuilder<E> withResolver(
         Class<R> cls,
-        SingleResolver<E, V, R> resolver
+        Resolver.Single<E, V, R> resolver
+    );
+
+    /**
+     * Register a new resolver (batched) for a resolvable class directly implementing its
+     * own resolver.
+     * @param <V> value class
+     * @param <R> resolvable class producing the value
+     * @param cls resolvable class to register
+     * @param resolver resolver to register
+     * @return a new EngineBuilder that has the resolver registered
+     */
+    <V, R extends Resolvable<V> & Resolver.Batched<E, V, R>> EngineBuilder<E> withResolvable(
+        Class<R> cls
+    );
+
+    /**
+     * Register a new resolver (single) for a resolvable class directly implementing its
+     * own resolver.
+     * @param <V> value class
+     * @param <R> resolvable class producing the value
+     * @param cls resolvable class to register
+     * @param resolver resolver to register
+     * @return a new EngineBuilder that has the resolver registered
+     */
+    <V, R extends Resolvable<V> & Resolver.Single<E, V, R>> EngineBuilder<E> withSingleResolvable(
+        Class<R> cls
     );
 
     /**
