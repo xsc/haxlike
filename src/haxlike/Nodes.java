@@ -2,9 +2,8 @@ package haxlike;
 
 import fj.*;
 import fj.data.List;
-import haxlike.nodes.ListNode;
-import haxlike.nodes.TupleNode;
-import haxlike.nodes.ValueNode;
+import haxlike.nodes.*;
+import haxlike.nodes.tuples.*;
 
 public class Nodes {
 
@@ -46,53 +45,26 @@ public class Nodes {
         return node.map(elements -> elements.map(f)).flatMap(ListNode::new);
     }
 
-    // --- Mappers
-    @SuppressWarnings("unchecked")
-    public static <A, B, R> Node<R> map(F2<A, B, R> f, Node<A> a, Node<B> b) {
-        return tuple(a, b).map(xs -> f.f((A) xs.index(0), (B) xs.index(1)));
+    // --- Tuples
+    public static <A, B> Tuple2<A, B> tuple(Node<A> a, Node<B> b) {
+        return new Tuple2<>(a, b);
     }
 
-    @SuppressWarnings("unchecked")
-    public static <A, B, R> Node<R> flatMap(
-        F2<A, B, Node<R>> f,
-        Node<A> a,
-        Node<B> b
-    ) {
-        return tuple(a, b).flatMap(xs -> f.f((A) xs.index(0), (B) xs.index(1)));
-    }
-
-    @SuppressWarnings("unchecked")
-    public static <A, B, C, R> Node<R> map(
-        F3<A, B, C, R> f,
+    public static <A, B, C> Tuple3<A, B, C> tuple(
         Node<A> a,
         Node<B> b,
         Node<C> c
     ) {
-        return tuple(a, b, c)
-            .map(xs -> f.f((A) xs.index(0), (B) xs.index(1), (C) xs.index(2)));
+        return new Tuple3<>(a, b, c);
     }
 
-    @SuppressWarnings("unchecked")
-    public static <A, B, C, R> Node<R> flatMap(
-        F3<A, B, C, Node<R>> f,
+    public static <A, B, C, D> Tuple4<A, B, C, D> tuple(
         Node<A> a,
         Node<B> b,
-        Node<C> c
+        Node<C> c,
+        Node<D> d
     ) {
-        return tuple(a, b, c)
-            .flatMap(
-                xs -> f.f((A) xs.index(0), (B) xs.index(1), (C) xs.index(2))
-            );
-    }
-
-    /**
-     * Hacky tuple node to allow multi-arg function calls.
-     * @param nodes the nodes to use as function parameters
-     * @return a tuple node.
-     */
-    private static TupleNode tuple(Node<?>... nodes) {
-        final List<Node<?>> nodeList = List.arrayList(nodes);
-        return new TupleNode(nodeList);
+        return new Tuple4<>(a, b, c, d);
     }
 
     private Nodes() {}

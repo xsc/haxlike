@@ -5,7 +5,9 @@ import fj.data.List;
 import haxlike.nodes.ValueNode;
 
 /**
+ *
  * Class representing an unresolved value.
+ * @param <T> class of resolved values
  */
 public interface Resolvable<T> extends Node<T> {
     @Override
@@ -34,4 +36,22 @@ public interface Resolvable<T> extends Node<T> {
             .<Node<T>>map(ValueNode::new)
             .orSome(() -> this);
     }
+
+    /**
+     * Utility interface to declare a resolvable with inlined resolution logic (single).
+     * @param <E> the environment class the resolver supports
+     * @param <T> the class of resolved values
+     * @param <R> this needs to be set to the implementing resolvable class
+     */
+    public interface Single<E, T, R extends Single<E, T, R>>
+        extends Resolvable<T>, Resolver.Single<E, T, R> {}
+
+    /**
+     * Utility interface to declare a resolvable with inlined resolution logic (batched).
+     * @param <E> the environment class the resolver supports
+     * @param <T> the class of resolved values
+     * @param <R> this needs to be set to the implementing resolvable class
+     */
+    public interface Batched<E, T, R extends Batched<E, T, R>>
+        extends Resolvable<T>, Resolver.Batched<E, T, R> {}
 }

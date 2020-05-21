@@ -66,8 +66,8 @@ public interface EngineBuilder<E> {
     );
 
     /**
-     * Set the resolution strategy in regards to parallelism. By default,
-     * resolution happens synchronously.
+     * Set the resolution {@link Strategy} in regards to parallelism. By default,
+     * resolution happens synchronously using {@link Strategy#seqStrategy()}.
      * @param s resolution strategy
      * @return a new EngineBuilder with the resolution strategy applied
      */
@@ -81,8 +81,8 @@ public interface EngineBuilder<E> {
     Engine build(E environment);
 
     /**
-     * Shorthand for 'withStrategy' when it's desired to use parallel execution
-     * using the given executor service.
+     * Shorthand for {@link EngineBuilder#withStrategy()} when it's desired to
+     * use parallel execution using the given executor service.
      * @param s the ExecutorService to use for resolution
      * @return a new EngineBuilder with the resolution strategy applied
      */
@@ -90,6 +90,11 @@ public interface EngineBuilder<E> {
         return withStrategy(Strategy.executorStrategy(s));
     }
 
+    /**
+     * Shorthand for {@link EngineBuilder#withStrategy()} when it's desired to
+     * use parallel execution using {@link ForkJoinPool#commonPool()}</code>.
+     * @return
+     */
     default EngineBuilder<E> withCommonForkJoinPool() {
         return withExecutorService(ForkJoinPool.commonPool());
     }

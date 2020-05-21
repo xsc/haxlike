@@ -56,8 +56,7 @@ public class FullTest {
     // --- Resolvables
     @Value(staticConstructor = "node")
     public static class AllPosts
-        implements
-            Resolvable<List<Post>>, Resolver.Single<Env, List<Post>, AllPosts> {
+        implements Resolvable.Single<Env, List<Post>, AllPosts> {
         static final AllPosts NODE = new AllPosts();
 
         @Override
