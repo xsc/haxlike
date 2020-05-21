@@ -7,11 +7,11 @@ import haxlike.Resolvable;
 import lombok.Value;
 
 @Value
-public class ListNode<T> implements Node<List<T>> {
+public class CollectionNode<T> implements Node<List<T>> {
     List<Node<T>> elements;
     boolean resolved;
 
-    public ListNode(List<Node<T>> elements) {
+    public CollectionNode(List<Node<T>> elements) {
         this.elements = elements;
         this.resolved = elements.forall(Node::isResolved);
     }
@@ -23,7 +23,7 @@ public class ListNode<T> implements Node<List<T>> {
 
     @Override
     public <V> Node<List<T>> injectValues(HashMap<Resolvable<V>, V> results) {
-        final ListNode<T> newNode = new ListNode<>(
+        final CollectionNode<T> newNode = new CollectionNode<>(
             elements.map(node -> node.injectValues(results))
         );
 

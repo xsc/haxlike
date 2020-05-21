@@ -6,6 +6,8 @@ import fj.data.HashMap;
 import fj.data.List;
 import haxlike.nodes.FlatMapNode;
 import haxlike.nodes.MapNode;
+import haxlike.nodes.decorators.NamedNodeDecorator;
+import haxlike.nodes.tuples.*;
 
 /**
  * Representation of a, potentially nested, node eventually containing a value.
@@ -40,6 +42,43 @@ public interface Node<T> {
      * @return a partially or fully resolved node with the same value type.
      */
     <V> Node<T> injectValues(HashMap<Resolvable<V>, V> results);
+
+    // --- Tuplers
+    /**
+     * Create a tuple with two elements, each representing the application
+     * of one of the given functions on the current node's value.
+     * @param <A> result value class
+     * @param <B> result value class
+     * @param fa first function to apply
+     * @param fb second function to apply
+     * @return a tuple of two elements
+     */
+    default <A, B> Tuple2<A, B> juxt(F<T, Node<A>> fa, F<T, Node<B>> fb) {
+        return Nodes.tuple(this.flatMap(fa), this.flatMap(fb));
+    }
+
+    /**
+     * Create a tuple with three elements, each representing the application
+     * of one of the given functions on the current node's value.
+     * @param <A> result value class
+     * @param <B> result value class
+     * @param <C> result value class
+     * @param fa first function to apply
+     * @param fb second function to apply
+     * @param fc third function to apply
+     * @return a tuple of three elements
+     */
+    default <A, B, C> Tuple3<A, B, C> juxt(
+        F<T, Node<A>> fa,
+        F<T, Node<B>> fb,
+        F<T, Node<C>> fc
+    ) {
+        return Nodes.tuple(
+            this.flatMap(fa),
+            this.flatMap(fb),
+            this.flatMap(fc)
+        );
+    }
 
     // --- Mappers
     /**
@@ -138,5 +177,14 @@ public interface Node<T> {
         Node<B> b
     ) {
         return Nodes.tuple(this, a, b).flatMap(f);
+    }
+
+    // --- Utilities
+    /**
+     * Give a name to this node. This will only affect the {@link Object#toString()}
+     * representation of the node, nothing else.
+     */
+    default Node<T> named(String name) {
+        return new NamedNodeDecorator<>(this, name);
     }
 }

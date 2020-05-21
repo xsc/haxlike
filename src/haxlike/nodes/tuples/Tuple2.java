@@ -55,4 +55,9 @@ public final class Tuple2<A, B> implements Node<P2<A, B>> {
     public <R> Node<R> flatMap(F2<A, B, Node<R>> f) {
         return this.flatMap(p -> f.f(p._1(), p._2()));
     }
+
+    @Override
+    public String toString() {
+        return a.toString() + ",\n" + b.toString();
+    }
 }

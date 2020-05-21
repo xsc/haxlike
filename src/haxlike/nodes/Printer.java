@@ -2,7 +2,7 @@ package haxlike.nodes;
 
 import fj.data.List;
 
-public class Printer {
+class Printer {
 
     public static String indent(String s) {
         final String pad = "  ";

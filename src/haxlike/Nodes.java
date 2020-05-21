@@ -3,6 +3,7 @@ package haxlike;
 import fj.*;
 import fj.data.List;
 import haxlike.nodes.*;
+import haxlike.nodes.decorators.ListDecorator;
 import haxlike.nodes.tuples.*;
 
 public class Nodes {
@@ -25,24 +26,18 @@ public class Nodes {
      */
     @SafeVarargs
     @SuppressWarnings("varargs")
-    public static <T> Node<List<T>> list(Node<T>... elements) {
-        return new ListNode<>(List.arrayList(elements));
+    public static <T> ListDecorator<T> list(Node<T>... elements) {
+        return asList(new CollectionNode<>(List.arrayList(elements)));
     }
 
     /**
-     * Apply the given function to every element of the list contained in the
-     * given node, resulting in a list of nodes to resolve.
-     * @param <T> element class
-     * @param <R> result element class
-     * @param node node to apply function to
-     * @param f function to appy
-     * @return a new node containing the list of mapped elements
+     * Decorate node with list-specific functionality, like {@link ListDecorator#traverse(F)}.
+     * @param <T> element value cleass
+     * @param node node to decorate
+     * @return a decorated list node
      */
-    public static <T, R> Node<List<R>> traverse(
-        F<T, Node<R>> f,
-        Node<List<T>> node
-    ) {
-        return node.map(elements -> elements.map(f)).flatMap(ListNode::new);
+    public static <T> ListDecorator<T> asList(Node<List<T>> node) {
+        return new ListDecorator<>(node);
     }
 
     // --- Tuples

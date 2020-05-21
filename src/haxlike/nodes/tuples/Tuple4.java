@@ -79,4 +79,17 @@ public final class Tuple4<A, B, C, D> implements Node<P4<A, B, C, D>> {
     public <R> Node<R> flatMap(F4<A, B, C, D, Node<R>> f) {
         return this.flatMap(p -> f.f(p._1(), p._2(), p._3(), p._4()));
     }
+
+    @Override
+    public String toString() {
+        return (
+            a.toString() +
+            ",\n" +
+            b.toString() +
+            ",\n" +
+            c.toString() +
+            ",\n" +
+            d.toString()
+        );
+    }
 }

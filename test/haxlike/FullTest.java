@@ -20,11 +20,10 @@ public class FullTest {
             .withCommonForkJoinPool()
             .build(new Env());
 
-        final Node<List<Comment>> node = traverse(
-                post -> PostComments.of(post.getId()),
-                AllPosts.NODE
-            )
-            .map(allComments -> allComments.bind(l -> l));
+        final Node<List<Comment>> node = asList(new AllPosts())
+            .collect(Post::getId)
+            .traverse(PostComments::of)
+            .foldLeft(List::append, List.nil());
 
         assertThat(engine.resolve(node)).hasSize(6);
     }
@@ -57,7 +56,6 @@ public class FullTest {
     @Value(staticConstructor = "node")
     public static class AllPosts
         implements Resolvable.Single<Env, List<Post>, AllPosts> {
-        static final AllPosts NODE = new AllPosts();
 
         @Override
         public List<Post> resolve(Env env, AllPosts resolvable) {
@@ -65,8 +63,6 @@ public class FullTest {
             env.simulateDelay();
             return List.range(0, 4).map(i -> new Post(i));
         }
-
-        private AllPosts() {}
     }
 
     @Value(staticConstructor = "of")

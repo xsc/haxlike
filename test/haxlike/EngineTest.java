@@ -90,20 +90,27 @@ public class EngineTest {
 
     @Test
     void resolve_shouldResolveWithNode() {
+        Node<Integer> product = tuple(promise(1), promise(2), promise(3))
+            .map((a, b, c) -> a * b * c)
+            .named("$product");
+
         Node<Integer> node = promise(1)
-            .map((a, b) -> a + b, slow(2))
-            .flatMap(EngineTest::slow)
-            .map((a, b) -> a * b, promise(3))
-            .flatMap((a, b, c) -> promise(a * b * c), promise(4), slow(3));
-        Integer expected = 108;
+            .map((a, b) -> a + b, product)
+            .map((a, b) -> a * b, product)
+            .flatMap(EngineTest::slow);
+
+        System.out.println(node);
+
+        Integer expected = 42;
         assertThat(engine.resolve(node, EngineCaches.defaultCache()))
             .isEqualTo(expected);
     }
 
     @Test
     void resolve_shouldResolveTraverse() {
-        Node<Integer> node = traverse(EngineTest::slow, list(slow(1), slow(2)))
-            .map(l -> l.foldLeft((a, b) -> a + b, 0));
+        Node<Integer> node = list(slow(1), slow(2))
+            .traverse(EngineTest::promise)
+            .foldLeft((a, b) -> a + b, 0);
         Integer expected = 3;
 
         assertThat(engine.resolve(node)).isEqualTo(expected);
