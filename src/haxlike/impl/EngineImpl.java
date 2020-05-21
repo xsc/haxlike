@@ -3,6 +3,7 @@ package haxlike.impl;
 import fj.Ord;
 import fj.control.parallel.Strategy;
 import fj.data.HashMap;
+import fj.data.HashSet;
 import fj.data.List;
 import haxlike.Engine;
 import haxlike.EngineCache;
@@ -34,14 +35,10 @@ class EngineImpl<E> implements Engine {
      * @param node node to resolve
      * @return a node with elements resolved
      */
-    @SuppressWarnings("unchecked")
-    private <T, V, R extends Resolvable<V>> Node<T> resolveNext(
-        Node<T> node,
-        EngineCache cache
-    ) {
+    private <T> Node<T> resolveNext(Node<T> node, EngineCache cache) {
         return Optional
             .of(node)
-            .map(n -> (List<R>) n.getResolvables())
+            .map(this::uniqueResolvables)
             .map(cache::removeCached)
             .map(this::selectNextBatches)
             .map(this::createAllOperations)
@@ -50,6 +47,15 @@ class EngineImpl<E> implements Engine {
             .map(cache::updateAndGet)
             .map(node::injectValues)
             .orElseThrow();
+    }
+
+    @SuppressWarnings("unchecked")
+    private <T, V, R extends Resolvable<V>> List<R> uniqueResolvables(
+        Node<T> node
+    ) {
+        final HashSet<R> s = HashSet.empty();
+        node.getResolvables().forEach(r -> s.set((R) r));
+        return s.toList();
     }
 
     @SuppressWarnings("unchecked")
