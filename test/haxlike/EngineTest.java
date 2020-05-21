@@ -38,7 +38,7 @@ public class EngineTest {
     ) {
         log.info("[resolve] {}", batch);
         try {
-            Thread.sleep(2000);
+            Thread.sleep(100);
         } catch (InterruptedException e) {}
         return batch.map(SlowResolvable::getValue);
     }
@@ -92,15 +92,17 @@ public class EngineTest {
     void resolve_shouldResolveWithNode() {
         Node<Integer> node = promise(1)
             .map((a, b) -> a + b, slow(2))
+            .flatMap(EngineTest::slow)
             .map((a, b) -> a * b, promise(3))
-            .flatMap((a, b, c) -> promise(a * b * c), promise(4), slow(1));
-        Integer expected = 36;
-        assertThat(engine.resolve(node)).isEqualTo(expected);
+            .flatMap((a, b, c) -> promise(a * b * c), promise(4), slow(3));
+        Integer expected = 108;
+        assertThat(engine.resolve(node, EngineCaches.defaultCache()))
+            .isEqualTo(expected);
     }
 
     @Test
     void resolve_shouldResolveTraverse() {
-        Node<Integer> node = traverse(list(slow(1), slow(2)), EngineTest::slow)
+        Node<Integer> node = traverse(EngineTest::slow, list(slow(1), slow(2)))
             .map(l -> l.foldLeft((a, b) -> a + b, 0));
         Integer expected = 3;
 

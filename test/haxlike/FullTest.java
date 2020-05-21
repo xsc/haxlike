@@ -21,8 +21,8 @@ public class FullTest {
             .build(new Env());
 
         final Node<List<Comment>> node = traverse(
-                AllPosts.NODE,
-                post -> PostComments.of(post.getId())
+                post -> PostComments.of(post.getId()),
+                AllPosts.NODE
             )
             .map(allComments -> allComments.bind(l -> l));
 

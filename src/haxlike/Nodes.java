@@ -39,8 +39,8 @@ public class Nodes {
      * @return a new node containing the list of mapped elements
      */
     public static <T, R> Node<List<R>> traverse(
-        Node<List<T>> node,
-        F<T, Node<R>> f
+        F<T, Node<R>> f,
+        Node<List<T>> node
     ) {
         return node.map(elements -> elements.map(f)).flatMap(ListNode::new);
     }

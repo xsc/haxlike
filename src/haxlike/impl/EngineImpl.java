@@ -5,6 +5,7 @@ import fj.control.parallel.Strategy;
 import fj.data.HashMap;
 import fj.data.List;
 import haxlike.Engine;
+import haxlike.EngineCache;
 import haxlike.Node;
 import haxlike.Resolvable;
 import haxlike.impl.EngineResolver.Operation;
@@ -19,10 +20,10 @@ class EngineImpl<E> implements Engine {
     Strategy<?> strategy;
 
     @Override
-    public <T> T resolve(Node<T> node) {
+    public <T> T resolve(Node<T> node, EngineCache cache) {
         Node<T> n = node;
         while (!n.isResolved()) {
-            n = resolveNext(n);
+            n = resolveNext(n, cache);
         }
         return n.getValue();
     }
@@ -33,13 +34,20 @@ class EngineImpl<E> implements Engine {
      * @param node node to resolve
      * @return a node with elements resolved
      */
-    private <T> Node<T> resolveNext(Node<T> node) {
+    @SuppressWarnings("unchecked")
+    private <T, V, R extends Resolvable<V>> Node<T> resolveNext(
+        Node<T> node,
+        EngineCache cache
+    ) {
         return Optional
             .of(node)
+            .map(n -> (List<R>) n.getResolvables())
+            .map(cache::removeCached)
             .map(this::selectNextBatches)
             .map(this::createAllOperations)
             .map(this::runOperations)
             .map(this::zipResults)
+            .map(cache::updateAndGet)
             .map(node::injectValues)
             .orElseThrow();
     }
@@ -63,14 +71,11 @@ class EngineImpl<E> implements Engine {
      * @param node node to select batches for
      * @return stream of batches
      */
-    @SuppressWarnings("unchecked")
-    private <T, V, R extends Resolvable<V>> List<List<R>> selectNextBatches(
-        Node<T> node
+    private <V, R extends Resolvable<V>> List<List<R>> selectNextBatches(
+        List<R> resolvables
     ) {
-        return ((List<R>) node.getResolvables()).groupBy(
-                r -> r.getClass().getName(),
-                Ord.stringOrd
-            )
+        return resolvables
+            .groupBy(r -> r.getClass().getName(), Ord.stringOrd)
             .values();
     }
 
