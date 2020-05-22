@@ -1,11 +1,9 @@
 package haxlike.impl;
 
-import fj.P2;
 import fj.data.List;
 import haxlike.Resolvable;
 import haxlike.Resolver;
-import lombok.RequiredArgsConstructor;
-import lombok.Value;
+import haxlike.Results;
 
 /**
  * This is a helper interface to represent the single operations necessary
@@ -35,6 +33,14 @@ interface EngineResolver<E, V, R extends Resolvable<V>> {
         return (env, batch) -> runBatchedResolver(r, env, batch);
     }
 
+    static <E, V, R extends Resolvable<V>> EngineResolver<E, V, R> from(
+        Resolver.BatchedInOrder<E, V, R> r
+    ) {
+        final Resolver.Batched<E, V, R> br = (env, batch) ->
+            Results.zip(batch, r.resolveAll(env, batch));
+        return from(br);
+    }
+
     @SuppressWarnings("squid:S1172")
     static <E, V, R extends Resolvable<V> & Resolver.Batched<E, V, R>> EngineResolver<E, V, R> from(
         Class<R> cls
@@ -61,9 +67,7 @@ interface EngineResolver<E, V, R extends Resolvable<V>> {
         E env,
         List<R> batch
     ) {
-        return List.single(
-            () -> batch.zip(r.resolveAll(env, batch)).map(Result::new)
-        );
+        return List.single(() -> r.resolveAll(env, batch));
     }
 
     static <E, V, R extends Resolvable<V>> List<Operation<R, V>> runSingleResolver(
@@ -73,28 +77,12 @@ interface EngineResolver<E, V, R extends Resolvable<V>> {
     ) {
         return batch.map(
             resolvable ->
-                () ->
-                    List.single(
-                        new Result<>(resolvable, r.resolve(env, resolvable))
-                    )
+                () -> Results.single(resolvable, r.resolve(env, resolvable))
         );
     }
 
-    // --- Give names to things
-    // We had used F0 and P2 originally, but this was not particularly readable.
     @FunctionalInterface
     interface Operation<R extends Resolvable<V>, V> {
-        List<Result<R, V>> runOperation();
-    }
-
-    @Value
-    @RequiredArgsConstructor
-    static class Result<R extends Resolvable<V>, V> {
-        R resolvable;
-        V value;
-
-        Result(P2<R, V> p) {
-            this(p._1(), p._2());
-        }
+        Results<R, V> runOperation();
     }
 }

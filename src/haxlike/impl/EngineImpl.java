@@ -2,15 +2,14 @@ package haxlike.impl;
 
 import fj.Ord;
 import fj.control.parallel.Strategy;
-import fj.data.HashMap;
 import fj.data.HashSet;
 import fj.data.List;
 import haxlike.Engine;
 import haxlike.EngineCache;
 import haxlike.Node;
 import haxlike.Resolvable;
+import haxlike.Results;
 import haxlike.impl.EngineResolver.Operation;
-import haxlike.impl.EngineResolver.Result;
 import java.util.Optional;
 import lombok.Value;
 
@@ -43,7 +42,6 @@ class EngineImpl<E> implements Engine {
             .map(this::selectNextBatches)
             .map(this::createAllOperations)
             .map(this::runOperations)
-            .map(this::zipResults)
             .map(cache::updateAndGet)
             .map(node::injectValues)
             .orElseThrow();
@@ -59,24 +57,17 @@ class EngineImpl<E> implements Engine {
     }
 
     @SuppressWarnings("unchecked")
-    private <V, R extends Resolvable<V>> List<Result<R, V>> runOperations(
+    private <V, R extends Resolvable<V>> Results<R, V> runOperations(
         List<Operation<R, V>> operations
     ) {
-        return ((Strategy<List<Result<R, V>>>) strategy).parMap1(
-                Operation::runOperation,
-                operations
-            )
-            .bind(l -> l);
+        final List<Results<R, V>> results =
+            ((Strategy<Results<R, V>>) strategy).parMap1(
+                    Operation::runOperation,
+                    operations
+                );
+        return Results.merge(results);
     }
 
-    /**
-     * Create a stream of batches to resolve, based on the desired parallelism.
-     * @param <T>  target class
-     * @param <V>  resolvable value class
-     * @param <R>  resolvable class
-     * @param node node to select batches for
-     * @return stream of batches
-     */
     private <V, R extends Resolvable<V>> List<List<R>> selectNextBatches(
         List<R> resolvables
     ) {
@@ -98,13 +89,5 @@ class EngineImpl<E> implements Engine {
         final Class<R> cls = (Class<R>) batch.index(0).getClass();
         final EngineResolver<E, V, R> resolver = registry.getOrThrow(cls);
         return resolver.createOperations(environment, batch);
-    }
-
-    private <V, R extends Resolvable<V>> HashMap<Resolvable<V>, V> zipResults(
-        List<Result<R, V>> results
-    ) {
-        final HashMap<Resolvable<V>, V> m = HashMap.hashMap();
-        results.forEach(r -> m.set(r.getResolvable(), r.getValue()));
-        return m;
     }
 }

@@ -4,10 +4,10 @@ import static fj.P.p;
 
 import fj.F4;
 import fj.P4;
-import fj.data.HashMap;
 import fj.data.List;
 import haxlike.Node;
 import haxlike.Resolvable;
+import haxlike.Results;
 import haxlike.nodes.ValueNode;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
@@ -60,7 +60,7 @@ public final class Tuple4<A, B, C, D> implements Node<P4<A, B, C, D>> {
 
     @Override
     public <V> Node<P4<A, B, C, D>> injectValues(
-        final HashMap<Resolvable<V>, V> results
+        Results<? extends Resolvable<V>, V> results
     ) {
         return ValueNode.ifResolved(
             new Tuple4<>(

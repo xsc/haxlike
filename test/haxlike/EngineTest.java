@@ -24,12 +24,12 @@ public class EngineTest {
                 .build("ENV");
     }
 
-    private static List<Integer> testResolve(
+    private static Results<TestResolvable, Integer> testResolve(
         String env,
         List<TestResolvable> batch
     ) {
         log.info("[resolve] {}", batch);
-        return batch.map(TestResolvable::getValue);
+        return Results.zip(batch, batch.map(TestResolvable::getValue));
     }
 
     private static List<Integer> slowResolve(

@@ -1,9 +1,9 @@
 package haxlike.nodes;
 
-import fj.data.HashMap;
 import fj.data.List;
 import haxlike.Node;
 import haxlike.Resolvable;
+import haxlike.Results;
 import lombok.Value;
 
 @Value
@@ -21,7 +21,9 @@ public class ValueNode<T> implements Node<T> {
     }
 
     @Override
-    public <V> Node<T> injectValues(HashMap<Resolvable<V>, V> results) {
+    public <V> Node<T> injectValues(
+        Results<? extends Resolvable<V>, V> results
+    ) {
         return this;
     }
 

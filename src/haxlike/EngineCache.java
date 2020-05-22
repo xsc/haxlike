@@ -1,6 +1,5 @@
 package haxlike;
 
-import fj.data.HashMap;
 import fj.data.List;
 
 public interface EngineCache {
@@ -17,7 +16,7 @@ public interface EngineCache {
      * @param results newly calculated resolution results
      * @return the full internal cache.
      */
-    <V, R extends Resolvable<V>> HashMap<R, V> updateAndGet(
-        HashMap<R, V> results
+    <V, R extends Resolvable<V>> Results<R, V> updateAndGet(
+        Results<R, V> results
     );
 }

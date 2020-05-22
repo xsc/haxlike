@@ -40,6 +40,14 @@ public class EngineBuilderImpl<E> implements EngineBuilder<E> {
     }
 
     @Override
+    public <V, R extends Resolvable<V>> EngineBuilder<E> withResolver(
+        Class<R> cls,
+        Resolver.BatchedInOrder<E, V, R> resolver
+    ) {
+        return register(cls, EngineResolver.from(resolver));
+    }
+
+    @Override
     public <V, R extends Resolvable<V> & Batched<E, V, R>> EngineBuilder<E> withResolvable(
         Class<R> cls
     ) {

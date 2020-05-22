@@ -4,10 +4,10 @@ import static fj.P.p;
 
 import fj.F2;
 import fj.P2;
-import fj.data.HashMap;
 import fj.data.List;
 import haxlike.Node;
 import haxlike.Resolvable;
+import haxlike.Results;
 import haxlike.nodes.ValueNode;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
@@ -42,7 +42,9 @@ public final class Tuple2<A, B> implements Node<P2<A, B>> {
     }
 
     @Override
-    public <V> Node<P2<A, B>> injectValues(HashMap<Resolvable<V>, V> results) {
+    public <V> Node<P2<A, B>> injectValues(
+        Results<? extends Resolvable<V>, V> results
+    ) {
         return ValueNode.ifResolved(
             new Tuple2<>(a.injectValues(results), b.injectValues(results))
         );

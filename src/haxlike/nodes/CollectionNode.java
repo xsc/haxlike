@@ -1,9 +1,9 @@
 package haxlike.nodes;
 
-import fj.data.HashMap;
 import fj.data.List;
 import haxlike.Node;
 import haxlike.Resolvable;
+import haxlike.Results;
 import lombok.Value;
 
 @Value
@@ -22,7 +22,9 @@ public class CollectionNode<T> implements Node<List<T>> {
     }
 
     @Override
-    public <V> Node<List<T>> injectValues(HashMap<Resolvable<V>, V> results) {
+    public <V> Node<List<T>> injectValues(
+        Results<? extends Resolvable<V>, V> results
+    ) {
         final CollectionNode<T> newNode = new CollectionNode<>(
             elements.map(node -> node.injectValues(results))
         );

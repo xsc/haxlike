@@ -2,7 +2,6 @@ package haxlike;
 
 import fj.*;
 import fj.F;
-import fj.data.HashMap;
 import fj.data.List;
 import haxlike.nodes.FlatMapNode;
 import haxlike.nodes.MapNode;
@@ -41,7 +40,7 @@ public interface Node<T> {
      * @param results map of resolvables and their results.
      * @return a partially or fully resolved node with the same value type.
      */
-    <V> Node<T> injectValues(HashMap<Resolvable<V>, V> results);
+    <V> Node<T> injectValues(Results<? extends Resolvable<V>, V> results);
 
     // --- Tuplers
     /**

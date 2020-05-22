@@ -1,9 +1,9 @@
 package haxlike.nodes.decorators;
 
-import fj.data.HashMap;
 import fj.data.List;
 import haxlike.Node;
 import haxlike.Resolvable;
+import haxlike.Results;
 
 /**
  * Decorator for nodes, passing all calls to the wrapped node.
@@ -32,7 +32,9 @@ public class NodeDecorator<T> implements Node<T> {
     }
 
     @Override
-    public <V> Node<T> injectValues(HashMap<Resolvable<V>, V> results) {
+    public <V> Node<T> injectValues(
+        Results<? extends Resolvable<V>, V> results
+    ) {
         return inner.injectValues(results);
     }
 

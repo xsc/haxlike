@@ -1,6 +1,5 @@
 package haxlike;
 
-import fj.data.HashMap;
 import fj.data.List;
 import haxlike.nodes.ValueNode;
 
@@ -29,9 +28,11 @@ public interface Resolvable<T> extends Node<T> {
 
     @Override
     @SuppressWarnings("unchecked")
-    default <V> Node<T> injectValues(HashMap<Resolvable<V>, V> results) {
+    default <V> Node<T> injectValues(
+        Results<? extends Resolvable<V>, V> results
+    ) {
         return results
-            .get((Resolvable<V>) this)
+            .get(this)
             .map(value -> (T) value)
             .<Node<T>>map(ValueNode::new)
             .orSome(() -> this);
@@ -61,7 +62,7 @@ public interface Resolvable<T> extends Node<T> {
         extends Resolvable<T>, Resolver.Batched<E, T, R> {
         @SuppressWarnings("unchecked")
         default T resolve(E env) {
-            return resolveAll(env, List.arrayList((R) this)).head();
+            return resolveAll(env, List.arrayList((R) this)).getSome(this);
         }
     }
 }

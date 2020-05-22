@@ -1,10 +1,10 @@
 package haxlike.nodes;
 
 import fj.F;
-import fj.data.HashMap;
 import fj.data.List;
 import haxlike.Node;
 import haxlike.Resolvable;
+import haxlike.Results;
 import lombok.Value;
 
 @Value
@@ -18,7 +18,9 @@ public class MapNode<T, R> implements Node<R> {
     }
 
     @Override
-    public <V> Node<R> injectValues(HashMap<Resolvable<V>, V> results) {
+    public <V> Node<R> injectValues(
+        Results<? extends Resolvable<V>, V> results
+    ) {
         return new MapNode<>(inner.injectValues(results), f);
     }
 
