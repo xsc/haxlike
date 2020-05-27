@@ -1,6 +1,5 @@
 package haxlike;
 
-import fj.control.parallel.Strategy;
 import haxlike.impl.EngineBuilderImpl;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ForkJoinPool;
@@ -79,12 +78,22 @@ public interface EngineBuilder<E> {
     );
 
     /**
-     * Set the resolution {@link Strategy} in regards to parallelism. By default,
-     * resolution happens synchronously using {@link Strategy#seqStrategy()}.
+     * Set the {@link SelectionStrategy} to steer order of resolution.
+     * By default, all available batches are selected using
+     * {@link SelectionStrategies#defaultStrategy()}.
+     * @param s selection strategy
+     * @return a new EngineBuilder with the resolution strategy applied
+     */
+    EngineBuilder<E> withSelectionStrategy(SelectionStrategy s);
+
+    /**
+     * Set the {@link ResolutionStrategy} in regards to parallelism.
+     * By default, resolution happens synchronously using
+     * {@link ResolutionStrategies#defaultStrategy()}.
      * @param s resolution strategy
      * @return a new EngineBuilder with the resolution strategy applied
      */
-    EngineBuilder<E> withStrategy(Strategy<?> s);
+    EngineBuilder<E> withResolutionStrategy(ResolutionStrategy s);
 
     /**
      * Build an engine bound to the given environment.
@@ -94,17 +103,19 @@ public interface EngineBuilder<E> {
     Engine build(E environment);
 
     /**
-     * Shorthand for {@link EngineBuilder#withStrategy()} when it's desired to
+     * Shorthand for {@link EngineBuilder#withResolutionStrategy()} when it's desired to
      * use parallel execution using the given executor service.
      * @param s the ExecutorService to use for resolution
      * @return a new EngineBuilder with the resolution strategy applied
      */
     default EngineBuilder<E> withExecutorService(ExecutorService s) {
-        return withStrategy(Strategy.executorStrategy(s));
+        return withResolutionStrategy(
+            ResolutionStrategies.executorServiceStrategy(s)
+        );
     }
 
     /**
-     * Shorthand for {@link EngineBuilder#withStrategy()} when it's desired to
+     * Shorthand for {@link EngineBuilder#withResolutionStrategy()} when it's desired to
      * use parallel execution using {@link ForkJoinPool#commonPool()}</code>.
      * @return
      */

@@ -1,25 +1,36 @@
 package haxlike.impl;
 
-import fj.control.parallel.Strategy;
 import haxlike.Engine;
 import haxlike.EngineBuilder;
+import haxlike.ResolutionStrategies;
+import haxlike.ResolutionStrategy;
 import haxlike.Resolvable;
 import haxlike.Resolver;
 import haxlike.Resolver.Batched;
 import haxlike.Resolver.Single;
+import haxlike.SelectionStrategies;
+import haxlike.SelectionStrategy;
+import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
+import lombok.With;
 
 @ToString
 @EqualsAndHashCode
 @RequiredArgsConstructor
+@With(AccessLevel.PRIVATE)
 public class EngineBuilderImpl<E> implements EngineBuilder<E> {
-    private final EngineRegistry<E> registry;
-    private final Strategy<?> strategy;
+    private final EngineRegistry<E> internalRegistry;
+    private final ResolutionStrategy internalResolutionStrategy;
+    private final SelectionStrategy internalSelectionStrategy;
 
     public EngineBuilderImpl() {
-        this(new EngineRegistry<>(), Strategy.seqStrategy());
+        this(
+            new EngineRegistry<>(),
+            ResolutionStrategies.defaultStrategy(),
+            SelectionStrategies.defaultStrategy()
+        );
     }
 
     // --- Helper
@@ -27,7 +38,7 @@ public class EngineBuilderImpl<E> implements EngineBuilder<E> {
         Class<R> cls,
         EngineResolver<E, V, R> r
     ) {
-        return new EngineBuilderImpl<>(registry.register(cls, r), strategy);
+        return this.withInternalRegistry(internalRegistry.register(cls, r));
     }
 
     // --- Impl
@@ -70,12 +81,23 @@ public class EngineBuilderImpl<E> implements EngineBuilder<E> {
     }
 
     @Override
-    public EngineBuilder<E> withStrategy(Strategy<?> s) {
-        return new EngineBuilderImpl<>(registry, s);
+    public EngineBuilder<E> withResolutionStrategy(ResolutionStrategy s) {
+        return this.withInternalResolutionStrategy(s);
+    }
+
+    @Override
+    public EngineBuilder<E> withSelectionStrategy(SelectionStrategy s) {
+        return this.withInternalSelectionStrategy(s);
     }
 
     @Override
     public Engine build(E environment) {
-        return new EngineImpl<>(registry, environment, strategy);
+        return EngineImpl
+            .<E>builder()
+            .environment(environment)
+            .registry(internalRegistry)
+            .resolutionStrategy(internalResolutionStrategy)
+            .selectionStrategy(internalSelectionStrategy)
+            .build();
     }
 }

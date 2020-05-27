@@ -5,10 +5,8 @@ import static org.assertj.core.api.Assertions.*;
 
 import fj.data.List;
 import lombok.Value;
-import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 
-@Slf4j
 public class FullTest {
 
     @Test
@@ -18,6 +16,11 @@ public class FullTest {
             .withSingleResolvable(AllPosts.class)
             .withResolver(PostComments.class, FullTest::fetchComments)
             .withCommonForkJoinPool()
+            .withSelectionStrategy(
+                SelectionStrategies
+                    .priorityStrategy()
+                    .withPriorityLowerThan(AllPosts.class, PostComments.class)
+            )
             .build(new Env());
 
         final Node<List<Comment>> node = asList(new AllPosts())
@@ -25,7 +28,10 @@ public class FullTest {
             .traverse(PostComments::of)
             .foldLeft(List::append, List.nil());
 
-        assertThat(engine.resolve(node)).hasSize(6);
+        final Node<List<Comment>> n = tuple(node, new PostComments(7))
+            .map((a, b) -> a);
+
+        assertThat(engine.resolve(n)).hasSize(6);
     }
 
     // --- Env
@@ -59,7 +65,6 @@ public class FullTest {
 
         @Override
         public List<Post> resolve(Env env, AllPosts resolvable) {
-            log.info("Resolving all posts...");
             env.simulateDelay();
             return List.range(0, 4).map(i -> new Post(i));
         }
@@ -75,7 +80,6 @@ public class FullTest {
         Env env,
         List<PostComments> rs
     ) {
-        log.info("Resolving comments for {} posts", rs.length());
         env.simulateDelay();
         return rs.map(
             r ->

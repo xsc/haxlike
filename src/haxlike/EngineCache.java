@@ -2,6 +2,7 @@ package haxlike;
 
 import fj.data.List;
 
+@SuppressWarnings("squid:S1452")
 public interface EngineCache {
     /**
      * Remove cached resolvables from the list of resolvables.

@@ -1,6 +1,7 @@
 package haxlike.impl;
 
 import fj.data.List;
+import haxlike.Operation;
 import haxlike.Resolvable;
 import haxlike.Resolver;
 import haxlike.Results;
@@ -67,7 +68,9 @@ interface EngineResolver<E, V, R extends Resolvable<V>> {
         E env,
         List<R> batch
     ) {
-        return List.single(() -> r.resolveAll(env, batch));
+        return List.single(
+            new Operation<>(batch, () -> r.resolveAll(env, batch))
+        );
     }
 
     static <E, V, R extends Resolvable<V>> List<Operation<R, V>> runSingleResolver(
@@ -77,12 +80,10 @@ interface EngineResolver<E, V, R extends Resolvable<V>> {
     ) {
         return batch.map(
             resolvable ->
-                () -> Results.single(resolvable, r.resolve(env, resolvable))
+                new Operation<>(
+                    List.single(resolvable),
+                    () -> Results.single(resolvable, r.resolve(env, resolvable))
+                )
         );
-    }
-
-    @FunctionalInterface
-    interface Operation<R extends Resolvable<V>, V> {
-        Results<R, V> runOperation();
     }
 }

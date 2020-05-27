@@ -36,6 +36,7 @@ public class Results<R, V> {
         }
     }
 
+    @SuppressWarnings("squid:S1319")
     public void into(HashMap<R, V> target) {
         forEach(target::set);
     }

@@ -5,11 +5,9 @@ import static org.assertj.core.api.Assertions.*;
 
 import fj.data.List;
 import lombok.Value;
-import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-@Slf4j
 public class EngineTest {
     Engine engine;
 
@@ -21,6 +19,7 @@ public class EngineTest {
                 .withResolver(TestResolvable.class, EngineTest::testResolve)
                 .withResolver(SlowResolvable.class, EngineTest::slowResolve)
                 .withCommonForkJoinPool()
+                .withSelectionStrategy(SelectionStrategies.maxStrategy(2))
                 .build("ENV");
     }
 
@@ -28,7 +27,9 @@ public class EngineTest {
         String env,
         List<TestResolvable> batch
     ) {
-        log.info("[resolve] {}", batch);
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {}
         return Results.zip(batch, batch.map(TestResolvable::getValue));
     }
 
@@ -36,9 +37,8 @@ public class EngineTest {
         String env,
         List<SlowResolvable> batch
     ) {
-        log.info("[resolve] {}", batch);
         try {
-            Thread.sleep(100);
+            Thread.sleep(1000);
         } catch (InterruptedException e) {}
         return batch.map(SlowResolvable::getValue);
     }
@@ -90,18 +90,15 @@ public class EngineTest {
 
     @Test
     void resolve_shouldResolveWithNode() {
-        Node<Integer> product = tuple(promise(1), promise(2), promise(3))
-            .map((a, b, c) -> a * b * c)
-            .named("$product");
+        Node<Integer> product = tuple(promise(1), slow(12), promise(3))
+            .map((a, b, c) -> a * c);
 
         Node<Integer> node = promise(1)
             .map((a, b) -> a + b, product)
             .map((a, b) -> a * b, product)
             .flatMap(EngineTest::slow);
 
-        System.out.println(node);
-
-        Integer expected = 42;
+        Integer expected = 12;
         assertThat(engine.resolve(node, EngineCaches.defaultCache()))
             .isEqualTo(expected);
     }

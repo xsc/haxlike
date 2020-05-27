@@ -1,28 +1,36 @@
 package haxlike.impl;
 
 import fj.Ord;
-import fj.control.parallel.Strategy;
 import fj.data.HashSet;
 import fj.data.List;
 import haxlike.Engine;
 import haxlike.EngineCache;
 import haxlike.Node;
+import haxlike.Operation;
+import haxlike.ResolutionStrategy;
 import haxlike.Resolvable;
 import haxlike.Results;
-import haxlike.impl.EngineResolver.Operation;
+import haxlike.SelectionStrategy;
 import java.util.Optional;
+import lombok.Builder;
 import lombok.Value;
+import lombok.extern.slf4j.Slf4j;
 
 @Value
+@Builder
+@Slf4j
 class EngineImpl<E> implements Engine {
     EngineRegistry<E> registry;
     E environment;
-    Strategy<?> strategy;
+    ResolutionStrategy resolutionStrategy;
+    SelectionStrategy selectionStrategy;
 
     @Override
     public <T> T resolve(Node<T> node, EngineCache cache) {
         Node<T> n = node;
+        int iterationCount = 1;
         while (!n.isResolved()) {
+            logIteration(iterationCount++);
             n = resolveNext(n, cache);
         }
         return n.getValue();
@@ -38,8 +46,10 @@ class EngineImpl<E> implements Engine {
         return Optional
             .of(node)
             .map(this::uniqueResolvables)
+            .map(this::logResolvables)
             .map(cache::removeCached)
             .map(this::selectNextBatches)
+            .map(this::logBatches)
             .map(this::createAllOperations)
             .map(this::runOperations)
             .map(cache::updateAndGet)
@@ -56,24 +66,19 @@ class EngineImpl<E> implements Engine {
         return s.toList();
     }
 
-    @SuppressWarnings("unchecked")
     private <V, R extends Resolvable<V>> Results<R, V> runOperations(
         List<Operation<R, V>> operations
     ) {
-        final List<Results<R, V>> results =
-            ((Strategy<Results<R, V>>) strategy).parMap1(
-                    Operation::runOperation,
-                    operations
-                );
-        return Results.merge(results);
+        return Results.merge(resolutionStrategy.run(operations));
     }
 
     private <V, R extends Resolvable<V>> List<List<R>> selectNextBatches(
         List<R> resolvables
     ) {
-        return resolvables
+        final List<List<R>> allBatches = resolvables
             .groupBy(r -> r.getClass().getName(), Ord.stringOrd)
             .values();
+        return selectionStrategy.select(allBatches);
     }
 
     private <V, R extends Resolvable<V>> List<Operation<R, V>> createAllOperations(
@@ -89,5 +94,30 @@ class EngineImpl<E> implements Engine {
         final Class<R> cls = (Class<R>) batch.index(0).getClass();
         final EngineResolver<E, V, R> resolver = registry.getOrThrow(cls);
         return resolver.createOperations(environment, batch);
+    }
+
+    // --- Logging
+    private void logIteration(int iterationCount) {
+        log.trace("--- Iteration #{}", iterationCount);
+    }
+
+    private <V, R extends Resolvable<V>> List<R> logResolvables(
+        List<R> resolvables
+    ) {
+        log.trace("Resolvables: {}", resolvables);
+        return resolvables;
+    }
+
+    private <V, R extends Resolvable<V>> List<List<R>> logBatches(
+        List<List<R>> batches
+    ) {
+        if (batches.isEmpty()) {
+            log.trace("=> No batches to resolve (might be cached).");
+        } else {
+            batches
+                .zipIndex()
+                .forEach(p -> log.trace("=> Batch[{}]: {}", p._2(), p._1()));
+        }
+        return batches;
     }
 }

@@ -5,7 +5,6 @@ import fj.F;
 import fj.data.List;
 import haxlike.nodes.FlatMapNode;
 import haxlike.nodes.MapNode;
-import haxlike.nodes.decorators.NamedNodeDecorator;
 import haxlike.nodes.tuples.*;
 
 /**
@@ -176,14 +175,5 @@ public interface Node<T> {
         Node<B> b
     ) {
         return Nodes.tuple(this, a, b).flatMap(f);
-    }
-
-    // --- Utilities
-    /**
-     * Give a name to this node. This will only affect the {@link Object#toString()}
-     * representation of the node, nothing else.
-     */
-    default Node<T> named(String name) {
-        return new NamedNodeDecorator<>(this, name);
     }
 }
