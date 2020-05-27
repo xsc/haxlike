@@ -18,6 +18,7 @@ public class Nodes {
         return new ValueNode<>(v);
     }
 
+    // --- Lists
     /**
      * Create a literal value node from a list of values.
      * @param <T> element value cleass
@@ -60,6 +61,34 @@ public class Nodes {
      */
     public static <T> ListDecorator<T> asList(Node<List<T>> node) {
         return new ListDecorator<>(node);
+    }
+
+    /**
+     * Traverse node using the given function
+     * @param <T> element value class
+     * @param <R> result value class
+     * @param node node to traverse
+     * @return a traversed list node
+     */
+    public static <T, R> ListDecorator<R> traverse(
+        Node<List<T>> node,
+        F<T, Node<R>> f
+    ) {
+        return asList(node).traverse(f);
+    }
+
+    /**
+     * Traverse values using the given function
+     * @param <T> element value class
+     * @param <R> result value class
+     * @param node node to traverse
+     * @return a traversed list node
+     */
+    public static <T, R> ListDecorator<R> traverse(
+        List<T> values,
+        F<T, Node<R>> f
+    ) {
+        return value(values).traverse(f);
     }
 
     // --- Tuples
