@@ -61,6 +61,31 @@ public class Results<R, V> {
         return new Results<>(resolvables.zip(results));
     }
 
+    public static <R, V, I> Results<R, V> match(
+        List<R> resolvables,
+        F<R, I> fr,
+        List<V> results,
+        F<V, I> fv,
+        V defaultValue
+    ) {
+        final HashMap<I, V> lookup = HashMap.iterableHashMap(
+            results.map(fv).zip(results)
+        );
+        return Results.zip(
+            resolvables,
+            resolvables.map(fr).map(i -> lookup.get(i).orSome(defaultValue))
+        );
+    }
+
+    public static <R, V, I> Results<R, V> match(
+        List<R> resolvables,
+        F<R, I> fr,
+        List<V> results,
+        F<V, I> fv
+    ) {
+        return Results.match(resolvables, fr, results, fv, null);
+    }
+
     // --- Wrapper around results
     @SuppressWarnings("squid:S1319")
     public static <R, V> Results<R, V> wrap(HashMap<R, V> values) {

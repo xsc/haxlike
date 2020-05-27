@@ -19,6 +19,28 @@ public class Nodes {
     }
 
     /**
+     * Create a literal value node from a list of values.
+     * @param <T> element value cleass
+     * @param values values to wrap
+     * @return a decorated list node
+     */
+    public static <T> ListDecorator<T> value(List<T> values) {
+        return new ListDecorator<>(new ValueNode<>(values));
+    }
+
+    /**
+     * Create a literal value node from a list of values.
+     * @param <T> element value cleass
+     * @param values values to wrap
+     * @return a decorated list node
+     */
+    @SafeVarargs
+    @SuppressWarnings("varargs")
+    public static <T> ListDecorator<T> value(T... values) {
+        return new ListDecorator<>(new ValueNode<>(List.arrayList(values)));
+    }
+
+    /**
      * Create list node consisting of other nodes.
      * @param <T> class of the elements
      * @param elements element nodes

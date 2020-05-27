@@ -11,8 +11,8 @@ public class FullTest {
 
     @Test
     void engine_shouldResolveCorrectly() {
-        final Engine engine = EngineBuilder
-            .of(Env.class)
+        final Engine engine = Engine
+            .<Env>builder()
             .withSingleResolvable(AllPosts.class)
             .withResolver(PostComments.class, FullTest::fetchComments)
             .withCommonForkJoinPool()

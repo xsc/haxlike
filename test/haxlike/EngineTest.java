@@ -14,8 +14,8 @@ public class EngineTest {
     @BeforeEach
     void setUp() {
         engine =
-            EngineBuilder
-                .of(String.class)
+            Engine
+                .<String>builder()
                 .withResolver(TestResolvable.class, EngineTest::testResolve)
                 .withResolver(SlowResolvable.class, EngineTest::slowResolve)
                 .withCommonForkJoinPool()

@@ -1,6 +1,5 @@
 package haxlike;
 
-import haxlike.impl.EngineBuilderImpl;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ForkJoinPool;
 
@@ -121,16 +120,5 @@ public interface EngineBuilder<E> {
      */
     default EngineBuilder<E> withCommonForkJoinPool() {
         return withExecutorService(ForkJoinPool.commonPool());
-    }
-
-    /**
-     * Create a new EngineBuilder for the given environment class
-     * @param <E> environment class
-     * @param environmentClass environment class
-     * @return a fresh EngineBuilder
-     */
-    @SuppressWarnings("squid:S1172")
-    static <E> EngineBuilder<E> of(Class<E> environmentClass) {
-        return new EngineBuilderImpl<>();
     }
 }
