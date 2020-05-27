@@ -30,7 +30,9 @@ public final class Resolver {
 
     /**
      * A batched resolver is a function that will use a supplied environment
-     * to return a list of results based on a list of values-to-resolve.
+     * to return a list of results based on a list of values-to-resolve. This
+     * is a special version that assumes that results are returned in an
+     * order matching the input resolvables.
      * @param <E> environment class
      * @param <V> return value of a single resolvable
      * @param <R> resolvable class

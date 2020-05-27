@@ -53,7 +53,7 @@ public class FullTest {
     }
 
     // --- Resolvables
-    @Value(staticConstructor = "node")
+    @Value
     public static class AllPosts
         implements Resolvable.Single<Env, List<Post>, AllPosts> {
 
