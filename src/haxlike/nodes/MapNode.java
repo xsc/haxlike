@@ -33,9 +33,4 @@ public class MapNode<T, R> implements Node<R> {
     public R getValue() {
         return f.f(inner.getValue());
     }
-
-    @Override
-    public String toString() {
-        return "map(\n" + Printer.indent(inner.toString()) + "\n)";
-    }
 }

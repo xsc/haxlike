@@ -21,7 +21,7 @@ public interface EngineBuilder<E> {
      */
     <V, R extends Resolvable<V>> EngineBuilder<E> withResolver(
         Class<R> cls,
-        Resolver.Batched<E, V, R> resolver
+        Resolver.Batched<? super E, V, R> resolver
     );
 
     /**
@@ -34,7 +34,7 @@ public interface EngineBuilder<E> {
      */
     <V, R extends Resolvable<V>> EngineBuilder<E> withResolver(
         Class<R> cls,
-        Resolver.BatchedInOrder<E, V, R> resolver
+        Resolver.BatchedInOrder<? super E, V, R> resolver
     );
 
     /**
@@ -47,7 +47,7 @@ public interface EngineBuilder<E> {
      */
     <V, R extends Resolvable<V>> EngineBuilder<E> withResolver(
         Class<R> cls,
-        Resolver.Single<E, V, R> resolver
+        Resolver.Single<? super E, V, R> resolver
     );
 
     /**
@@ -59,7 +59,7 @@ public interface EngineBuilder<E> {
      * @param resolver resolver to register
      * @return a new EngineBuilder that has the resolver registered
      */
-    <V, R extends Resolvable<V> & Resolver.Batched<E, V, R>> EngineBuilder<E> withResolvable(
+    <V, R extends Resolvable<V> & Resolver.Batched<? super E, V, R>> EngineBuilder<E> withResolvable(
         Class<R> cls
     );
 
@@ -72,7 +72,7 @@ public interface EngineBuilder<E> {
      * @param resolver resolver to register
      * @return a new EngineBuilder that has the resolver registered
      */
-    <V, R extends Resolvable<V> & Resolver.Single<E, V, R>> EngineBuilder<E> withSingleResolvable(
+    <V, R extends Resolvable<V> & Resolver.Single<? super E, V, R>> EngineBuilder<E> withSingleResolvable(
         Class<R> cls
     );
 

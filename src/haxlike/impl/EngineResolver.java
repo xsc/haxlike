@@ -29,13 +29,13 @@ interface EngineResolver<E, V, R extends Resolvable<V>> {
     List<Operation<R, V>> createOperations(E env, List<R> batch);
 
     static <E, V, R extends Resolvable<V>> EngineResolver<E, V, R> from(
-        Resolver.Batched<E, V, R> r
+        Resolver.Batched<? super E, V, R> r
     ) {
         return (env, batch) -> runBatchedResolver(r, env, batch);
     }
 
     static <E, V, R extends Resolvable<V>> EngineResolver<E, V, R> from(
-        Resolver.BatchedInOrder<E, V, R> r
+        Resolver.BatchedInOrder<? super E, V, R> r
     ) {
         final Resolver.Batched<E, V, R> br = (env, batch) ->
             Results.zip(batch, r.resolveAll(env, batch));
@@ -43,20 +43,20 @@ interface EngineResolver<E, V, R extends Resolvable<V>> {
     }
 
     @SuppressWarnings("squid:S1172")
-    static <E, V, R extends Resolvable<V> & Resolver.Batched<E, V, R>> EngineResolver<E, V, R> from(
+    static <E, V, R extends Resolvable<V> & Resolver.Batched<? super E, V, R>> EngineResolver<E, V, R> from(
         Class<R> cls
     ) {
         return (env, batch) -> runBatchedResolver(batch.head(), env, batch);
     }
 
     static <E, V, R extends Resolvable<V>> EngineResolver<E, V, R> fromSingle(
-        Resolver.Single<E, V, R> r
+        Resolver.Single<? super E, V, R> r
     ) {
         return (env, batch) -> runSingleResolver(r, env, batch);
     }
 
     @SuppressWarnings("squid:S1172")
-    static <E, V, R extends Resolvable<V> & Resolver.Single<E, V, R>> EngineResolver<E, V, R> fromSingle(
+    static <E, V, R extends Resolvable<V> & Resolver.Single<? super E, V, R>> EngineResolver<E, V, R> fromSingle(
         Class<R> cls
     ) {
         return (env, batch) -> runSingleResolver(batch.head(), env, batch);
@@ -64,7 +64,7 @@ interface EngineResolver<E, V, R extends Resolvable<V>> {
 
     // --- Helpers
     static <E, V, R extends Resolvable<V>> List<Operation<R, V>> runBatchedResolver(
-        Resolver.Batched<E, V, R> r,
+        Resolver.Batched<? super E, V, R> r,
         E env,
         List<R> batch
     ) {
@@ -74,7 +74,7 @@ interface EngineResolver<E, V, R extends Resolvable<V>> {
     }
 
     static <E, V, R extends Resolvable<V>> List<Operation<R, V>> runSingleResolver(
-        Resolver.Single<E, V, R> r,
+        Resolver.Single<? super E, V, R> r,
         E env,
         List<R> batch
     ) {

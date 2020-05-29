@@ -5,9 +5,21 @@ import static org.assertj.core.api.Assertions.*;
 
 import fj.data.List;
 import lombok.Value;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 public class FullTest {
+
+    @BeforeAll
+    static void setUp() {
+        TestUtil.setTraceLogging();
+    }
+
+    @AfterAll
+    static void tearDown() {
+        TestUtil.resetLogging();
+    }
 
     @Test
     void engine_shouldResolveCorrectly() {
@@ -35,10 +47,15 @@ public class FullTest {
     }
 
     // --- Env
-    @Value
-    public static class Env {
+    private static interface CanSimulateDelay {
+        void simulateDelay();
+    }
 
-        void simulateDelay() {
+    @Value
+    public static class Env implements CanSimulateDelay {
+
+        @Override
+        public void simulateDelay() {
             try {
                 Thread.sleep(100);
             } catch (InterruptedException e) {}
@@ -61,10 +78,10 @@ public class FullTest {
     // --- Resolvables
     @Value
     public static class AllPosts
-        implements Resolvable.Single<Env, List<Post>, AllPosts> {
+        implements Resolvable.Single<CanSimulateDelay, List<Post>, AllPosts> {
 
         @Override
-        public List<Post> resolve(Env env, AllPosts resolvable) {
+        public List<Post> resolve(CanSimulateDelay env, AllPosts resolvable) {
             env.simulateDelay();
             return List.range(0, 4).map(i -> new Post(i));
         }

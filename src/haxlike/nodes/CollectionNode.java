@@ -8,17 +8,17 @@ import lombok.Value;
 
 @Value
 public class CollectionNode<T> implements Node<List<T>> {
-    List<Node<T>> elements;
+    List<Node<T>> childNodes;
     boolean resolved;
 
-    public CollectionNode(List<Node<T>> elements) {
-        this.elements = elements;
-        this.resolved = elements.forall(Node::isResolved);
+    public CollectionNode(List<Node<T>> childNodes) {
+        this.childNodes = childNodes;
+        this.resolved = childNodes.forall(Node::isResolved);
     }
 
     @Override
     public List<Resolvable<?>> getResolvables() {
-        return elements.bind(Node::getResolvables);
+        return childNodes.bind(Node::getResolvables);
     }
 
     @Override
@@ -26,7 +26,7 @@ public class CollectionNode<T> implements Node<List<T>> {
         Results<? extends Resolvable<V>, V> results
     ) {
         final CollectionNode<T> newNode = new CollectionNode<>(
-            elements.map(node -> node.injectValues(results))
+            childNodes.map(node -> node.injectValues(results))
         );
 
         return ValueNode.ifResolved(newNode);
@@ -34,20 +34,6 @@ public class CollectionNode<T> implements Node<List<T>> {
 
     @Override
     public List<T> getValue() {
-        return elements.map(Node::getValue);
-    }
-
-    @Override
-    public String toString() {
-        return (
-            "[\n" +
-            Printer.indent(
-                String.join(
-                    ",\n  ",
-                    elements.map(Object::toString).toJavaList()
-                )
-            ) +
-            "\n]"
-        );
+        return childNodes.map(Node::getValue);
     }
 }

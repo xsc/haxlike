@@ -40,9 +40,8 @@ public class Env {
 
 #### Define a Resolver
 
-There are multiple types or resolvers, the simplest one being `Resolver.Single`
-that will resolve a single value. However, more interesting is `Resolver.Batched`
-which will be able to resolve multiple values in one go:
+There are multiple types or resolvers, the most interesting being batched ones.
+These take the environment we defined and a list of entities to resolve:
 
 ```java
 public class Resolvers {

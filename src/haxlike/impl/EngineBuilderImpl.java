@@ -36,7 +36,7 @@ public class EngineBuilderImpl<E> implements EngineBuilder<E> {
     // --- Helper
     private <V, R extends Resolvable<V>> EngineBuilderImpl<E> register(
         Class<R> cls,
-        EngineResolver<E, V, R> r
+        EngineResolver<? super E, V, R> r
     ) {
         return this.withInternalRegistry(internalRegistry.register(cls, r));
     }
@@ -45,7 +45,7 @@ public class EngineBuilderImpl<E> implements EngineBuilder<E> {
     @Override
     public <V, R extends Resolvable<V>> EngineBuilder<E> withResolver(
         Class<R> cls,
-        Resolver.Batched<E, V, R> resolver
+        Resolver.Batched<? super E, V, R> resolver
     ) {
         return register(cls, EngineResolver.from(resolver));
     }
@@ -53,13 +53,13 @@ public class EngineBuilderImpl<E> implements EngineBuilder<E> {
     @Override
     public <V, R extends Resolvable<V>> EngineBuilder<E> withResolver(
         Class<R> cls,
-        Resolver.BatchedInOrder<E, V, R> resolver
+        Resolver.BatchedInOrder<? super E, V, R> resolver
     ) {
         return register(cls, EngineResolver.from(resolver));
     }
 
     @Override
-    public <V, R extends Resolvable<V> & Batched<E, V, R>> EngineBuilder<E> withResolvable(
+    public <V, R extends Resolvable<V> & Batched<? super E, V, R>> EngineBuilder<E> withResolvable(
         Class<R> cls
     ) {
         return register(cls, EngineResolver.from(cls));
@@ -68,13 +68,13 @@ public class EngineBuilderImpl<E> implements EngineBuilder<E> {
     @Override
     public <V, R extends Resolvable<V>> EngineBuilder<E> withResolver(
         Class<R> cls,
-        Resolver.Single<E, V, R> resolver
+        Resolver.Single<? super E, V, R> resolver
     ) {
         return register(cls, EngineResolver.fromSingle(resolver));
     }
 
     @Override
-    public <V, R extends Resolvable<V> & Single<E, V, R>> EngineBuilder<E> withSingleResolvable(
+    public <V, R extends Resolvable<V> & Single<? super E, V, R>> EngineBuilder<E> withSingleResolvable(
         Class<R> cls
     ) {
         return register(cls, EngineResolver.fromSingle(cls));
