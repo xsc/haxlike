@@ -70,11 +70,11 @@ public class Nodes {
      * @param node node to traverse
      * @return a traversed list node
      */
-    public static <T, R> ListDecorator<R> traverse(
+    public static <T, R> ListDecorator<R> flatMapEach(
         Node<List<T>> node,
         F<T, Node<R>> f
     ) {
-        return asList(node).traverse(f);
+        return asList(node).flatMapEach(f);
     }
 
     /**
@@ -84,11 +84,11 @@ public class Nodes {
      * @param node node to traverse
      * @return a traversed list node
      */
-    public static <T, R> ListDecorator<R> traverse(
+    public static <T, R> ListDecorator<R> flatMapEach(
         List<T> values,
         F<T, Node<R>> f
     ) {
-        return value(values).traverse(f);
+        return value(values).flatMapEach(f);
     }
 
     // --- Tuples

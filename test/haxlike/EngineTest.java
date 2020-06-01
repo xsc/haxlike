@@ -106,7 +106,7 @@ public class EngineTest {
     @Test
     void resolve_shouldResolveTraverse() {
         Node<Integer> node = list(slow(1), slow(2))
-            .traverse(EngineTest::promise)
+            .flatMapEach(EngineTest::promise)
             .foldLeft((a, b) -> a + b, 0);
         Integer expected = 3;
 

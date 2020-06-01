@@ -51,32 +51,6 @@ public interface EngineBuilder<E> {
     );
 
     /**
-     * Register a new resolver (batched) for a resolvable class directly implementing its
-     * own resolver.
-     * @param <V> value class
-     * @param <R> resolvable class producing the value
-     * @param cls resolvable class to register
-     * @param resolver resolver to register
-     * @return a new EngineBuilder that has the resolver registered
-     */
-    <V, R extends Resolvable<V> & Resolver.Batched<? super E, V, R>> EngineBuilder<E> withResolvable(
-        Class<R> cls
-    );
-
-    /**
-     * Register a new resolver (single) for a resolvable class directly implementing its
-     * own resolver.
-     * @param <V> value class
-     * @param <R> resolvable class producing the value
-     * @param cls resolvable class to register
-     * @param resolver resolver to register
-     * @return a new EngineBuilder that has the resolver registered
-     */
-    <V, R extends Resolvable<V> & Resolver.Single<? super E, V, R>> EngineBuilder<E> withSingleResolvable(
-        Class<R> cls
-    );
-
-    /**
      * Set the {@link SelectionStrategy} to steer order of resolution.
      * By default, all available batches are selected using
      * {@link SelectionStrategies#defaultStrategy()}.

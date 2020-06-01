@@ -6,8 +6,6 @@ import haxlike.ResolutionStrategies;
 import haxlike.ResolutionStrategy;
 import haxlike.Resolvable;
 import haxlike.Resolver;
-import haxlike.Resolver.Batched;
-import haxlike.Resolver.Single;
 import haxlike.SelectionStrategies;
 import haxlike.SelectionStrategy;
 import lombok.AccessLevel;
@@ -59,25 +57,11 @@ public class EngineBuilderImpl<E> implements EngineBuilder<E> {
     }
 
     @Override
-    public <V, R extends Resolvable<V> & Batched<? super E, V, R>> EngineBuilder<E> withResolvable(
-        Class<R> cls
-    ) {
-        return register(cls, EngineResolver.from(cls));
-    }
-
-    @Override
     public <V, R extends Resolvable<V>> EngineBuilder<E> withResolver(
         Class<R> cls,
         Resolver.Single<? super E, V, R> resolver
     ) {
         return register(cls, EngineResolver.fromSingle(resolver));
-    }
-
-    @Override
-    public <V, R extends Resolvable<V> & Single<? super E, V, R>> EngineBuilder<E> withSingleResolvable(
-        Class<R> cls
-    ) {
-        return register(cls, EngineResolver.fromSingle(cls));
     }
 
     @Override
