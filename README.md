@@ -21,17 +21,35 @@ an entity (users). If these were imperative calls, you'd perform one query to ge
 users, then one additonal query for _each and every_ user to get their posts. This
 is the so-called _N+1 query problem_ and can get you in terrible trouble.
 
-With haxlike you can write exactly the above piece of code. You'll need one more
-line to actually trigger the data fetching, but behind the scenes the engine will
-take care of:
+With haxlike you can basically write the above piece of code in good conscience:
+
+```java
+var users = fetchUsers()
+  .traverse(user -> {
+    var posts = fetchPosts(user.getId());
+    return posts.map(values -> new UserWithPosts(user, values));
+  });
+engine.resolve(users);
+```
+
+You need one more line to actually trigger the data fetching but behind the scenes
+the engine will take care of:
 
 - **Batching:** Run queries for group of similar entities instead of one by one.
+- **Parallelism:**: Run independent queries in parallel instead of sequentially.
 - **Deduplication:** Don't include the same entity multiple times in a query.
 - **Caching**: Don't fetch an entity more than once.
 
 On top of that, haxlike provides a functional style based on immutable data
 structures, with useful traversal and manipulation functions for the most
-common use cases.
+common use cases. For example, the above could also have been written as:
+
+```java
+var users = fetchUsers().attachEach(
+  UserWithPosts::new,
+  user -> fetchPosts(user.getId())
+);
+```
 
 ## License
 
