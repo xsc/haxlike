@@ -4,97 +4,34 @@ A Java experiment for declarative data fetching, akin to [haxl][].
 
 [haxl]: https://github.com/facebook/Haxl
 
-## Overview
+## Declarative Data Fetching
 
-### Resolvers & Engines
-
-#### Define a Resolvable
-
-A resolvable is a value that implements the `Resolvable<T>` interface. It represents
-a deferred value that will eventually yield a result of type `T`:
+To understand what haxlike does, consider the following code:
 
 ```java
-@Value
-public class User implements Resolvable<UserDto> {
-  int id;
-}
+var users = fetchUsers()
+  .traverse(user -> {
+    var posts = fetchPosts(user.getId());
+    return new UserWithPosts(user, posts);
+  });
 ```
 
-By using [lombok][]'s `@Value` annotation, we get necessary equality and hashCode
-semantics for free.
+This is a naïve implementation of attaching a one-to-many relation (posts) to
+an entity (users). If these were imperative calls, you'd perform one query to get all
+users, then one additonal query for _each and every_ user to get their posts. This
+is the so-called _N+1 query problem_ and can get you in terrible trouble.
 
-[lombok]: https://projectlombok.org/
+With haxlike you can write exactly the above piece of code. You'll need one more
+line to actually trigger the data fetching, but behind the scenes the engine will
+take care of:
 
-#### Define an Environment
+- **Batching:** Run queries for group of similar entities instead of one by one.
+- **Deduplication:** Don't include the same entity multiple times in a query.
+- **Caching**: Don't fetch an entity more than once.
 
-An environment will be passed to the data fetching logic that we'll define in a
-second. It can contain contain everything from configuration values to database
-connections:
-
-```java
-@Value
-public class Env {
-  UserService userService;
-}
-```
-
-#### Define a Resolver
-
-There are multiple types or resolvers, the most interesting being batched ones.
-These take the environment we defined and a list of entities to resolve:
-
-```java
-public class Resolvers {
-
-  public static Results<User, UserDto> resolveUsers(Env env, List<User> users) {
-    final List<Integer> ids = users.map(User::getId);
-    final List<UserDto> dtos = env.getUserService().fetchAll(ids);
-    return Results.match(users, User::getId, dtos, UserDto::getId);
-  }
-}
-```
-
-A resolver is required to associate every resolvable with its result, which is
-aided by matching functions like `Results.match()` above.
-
-#### Create an Engine
-
-An engine brings together an environment, a selection of resolvers, as well as
-strategies for batch selection and resolution:
-
-```java
-final Engine engine = Engine
-    .<Env>builder()
-    .withResolver(User.class, Resolvers::resolveUsers)
-    .withCommonForkJoinPool()
-    .build(new Env(userService));
-```
-
-This engine will use the common thread pool to perform parallel resolution
-of batches.
-
-By default, resolution is sequential and batches are resolved once they are
-available. You can tweak that behaviour using `haxlike.ResolutionStrategy`
-and `haxlike.SelectionStrategy`.
-
-### Run it!
-
-The most boring case is resolving a single node:
-
-```java
-engine.resolve(new User(1));
-// => UserDto(id=1, ...)
-```
-
-More than one node will still result in only one query to the `userService`;
-and you can apply transformations to single nodes, lists and tuples:
-
-```java
-engine.resolve(
-    tuple(new User(1), new User(2))
-        .map((a, b) -> a.getFriends().append(b.getFriends())));
-// => [2,3,4,...]
-```
+On top of that, haxlike provides a functional style based on immutable data
+structures, with useful traversal and manipulation functions for the most
+common use cases.
 
 ## License
 
