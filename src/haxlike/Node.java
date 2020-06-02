@@ -125,7 +125,11 @@ public interface Node<T> {
      * @return a new node representing the result of applying the function.
      */
     default <R> Node<R> flatMap(F<T, Node<R>> f) {
-        return new FlatMapNode<>(this, f);
+        if (this.isResolved()) {
+            return new FlatMapNode.Resolved<>(this, f);
+        } else {
+            return new FlatMapNode<>(this, f);
+        }
     }
 
     /**
@@ -207,9 +211,8 @@ public interface Node<T> {
     }
 
     /**
-     * Run the given attachment function for each element of this list to create
-     * a value to attach. Afterwards call the given 'attach' function on the
-     * original value and the value to attach.
+     * Run the given attachment function for this node's value to create a value to attach
+     * Afterwards call the given 'attach' function on the original value and the value to attach.
      * @param <V> result value class
      * @param <R> attachment value class
      * @param attach function to combine the original value with the attachment
@@ -225,9 +228,8 @@ public interface Node<T> {
     }
 
     /**
-     * Run the given attachment functions for each element of this list to create
-     * values to attach. Afterwards call the given 'attach' function on the
-     * original value and the values to attach.
+     * Run the given attachment functions for this node's value to create values to attach
+     * Afterwards call the given 'attach' function on the original value and the values to attach.
      * @param <V> result value class
      * @param <A> first attachment value class
      * @param <B> second attachment value class

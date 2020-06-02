@@ -3,7 +3,6 @@ package haxlike;
 import fj.*;
 import fj.data.List;
 import haxlike.nodes.*;
-import haxlike.nodes.decorators.ListDecorator;
 import haxlike.nodes.tuples.*;
 
 public class Nodes {
@@ -25,8 +24,8 @@ public class Nodes {
      * @param values values to wrap
      * @return a decorated list node
      */
-    public static <T> ListDecorator<T> value(List<T> values) {
-        return new ListDecorator<>(new ValueNode<>(values));
+    public static <T> ListNode<T> value(List<T> values) {
+        return new ListNode.Decorator<>(new ValueNode<>(values));
     }
 
     /**
@@ -37,8 +36,10 @@ public class Nodes {
      */
     @SafeVarargs
     @SuppressWarnings("varargs")
-    public static <T> ListDecorator<T> value(T... values) {
-        return new ListDecorator<>(new ValueNode<>(List.arrayList(values)));
+    public static <T> ListNode<T> value(T... values) {
+        return new ListNode.Decorator<>(
+            new ValueNode<>(List.arrayList(values))
+        );
     }
 
     /**
@@ -49,18 +50,18 @@ public class Nodes {
      */
     @SafeVarargs
     @SuppressWarnings("varargs")
-    public static <T> ListDecorator<T> list(Node<T>... elements) {
+    public static <T> ListNode<T> list(Node<T>... elements) {
         return asList(new CollectionNode<>(List.arrayList(elements)));
     }
 
     /**
-     * Decorate node with list-specific functionality, like {@link ListDecorator#traverse(F)}.
+     * Decorate node with list-specific functionality, like {@link ListNode#traverse(F)}.
      * @param <T> element value cleass
      * @param node node to decorate
      * @return a decorated list node
      */
-    public static <T> ListDecorator<T> asList(Node<List<T>> node) {
-        return new ListDecorator<>(node);
+    public static <T> ListNode<T> asList(Node<List<T>> node) {
+        return new ListNode.Decorator<>(node);
     }
 
     /**
@@ -70,7 +71,7 @@ public class Nodes {
      * @param node node to traverse
      * @return a traversed list node
      */
-    public static <T, R> ListDecorator<R> flatMapEach(
+    public static <T, R> ListNode<R> flatMapEach(
         Node<List<T>> node,
         F<T, Node<R>> f
     ) {
@@ -84,7 +85,7 @@ public class Nodes {
      * @param node node to traverse
      * @return a traversed list node
      */
-    public static <T, R> ListDecorator<R> flatMapEach(
+    public static <T, R> ListNode<R> flatMapEach(
         List<T> values,
         F<T, Node<R>> f
     ) {

@@ -10,10 +10,10 @@ To understand what haxlike does, consider the following code:
 
 ```java
 var users = fetchUsers()
-  .traverse(user -> {
-    var posts = fetchPosts(user.getId());
-    return new UserWithPosts(user, posts);
-  });
+    .traverse(user -> {
+        var posts = fetchPosts(user.getId());
+        return new UserWithPosts(user, posts);
+    });
 ```
 
 This is a naïve implementation of attaching a one-to-many relation (posts) to
@@ -25,10 +25,10 @@ With haxlike you can basically write the above piece of code in good conscience:
 
 ```java
 var users = fetchUsers()
-  .traverse(user -> {
-    var posts = fetchPosts(user.getId());
-    return posts.map(values -> new UserWithPosts(user, values));
-  });
+    .flatMapEach(user -> {
+        var posts = fetchPosts(user.getId());
+        return posts.map(values -> new UserWithPosts(user, values));
+    });
 engine.resolve(users);
 ```
 
@@ -45,10 +45,11 @@ structures, with useful traversal and manipulation functions for the most
 common use cases. For example, the above could also have been written as:
 
 ```java
-var users = fetchUsers().attachEach(
-  UserWithPosts::new,
-  user -> fetchPosts(user.getId())
-);
+var users = fetchUsers()
+    .attachEach(
+        UserWithPosts::new,
+        user -> fetchPosts(user.getId())
+    );
 ```
 
 ## License

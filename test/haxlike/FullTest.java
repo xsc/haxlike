@@ -33,13 +33,13 @@ public class FullTest {
             .withSelectionStrategy(
                 SelectionStrategies
                     .priorityStrategy()
-                    .withPriorityLowerThan(AllPosts.class, PostComments.class)
+                    .withPriorityHigherThan(AllPosts.class, PostComments.class)
             )
             .build(new Env());
 
         final Node<List<Comment>> node = asList(new AllPosts())
             .mapEach(Post::getId)
-            .traverse(PostComments::of)
+            .flatMapEach(PostComments::of)
             .foldLeft(List::append, List.nil());
 
         assertThat(engine.resolve(node)).hasSize(6);
@@ -56,7 +56,7 @@ public class FullTest {
         @Override
         public void simulateDelay() {
             try {
-                Thread.sleep(100);
+                Thread.sleep(10);
             } catch (InterruptedException e) {}
         }
     }

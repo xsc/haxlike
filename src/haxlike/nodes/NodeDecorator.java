@@ -1,4 +1,4 @@
-package haxlike.nodes.decorators;
+package haxlike.nodes;
 
 import fj.data.List;
 import haxlike.Node;
