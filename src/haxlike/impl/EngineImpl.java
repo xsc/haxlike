@@ -51,7 +51,8 @@ class EngineImpl<E> implements Engine {
 
     /**
      * Resolve the next available batches of resolvables
-     * @param <T> target class
+     *
+     * @param <T>  target class
      * @param node node to resolve
      * @return a node with elements resolved
      */
@@ -66,7 +67,7 @@ class EngineImpl<E> implements Engine {
             .map(this::createAllOperations)
             .map(this::runOperations)
             .map(cache::updateAndGet)
-            .map(node::injectValues)
+            .map(results -> injectResults(node, results))
             .orElseThrow();
     }
 
@@ -79,10 +80,10 @@ class EngineImpl<E> implements Engine {
         return s.toList();
     }
 
-    private <V, R extends Resolvable<V>> Results<R, V> runOperations(
+    private <V, R extends Resolvable<V>> Results runOperations(
         List<Operation<R, V>> operations
     ) {
-        return Results.merge(resolutionStrategy.run(operations));
+        return ResultsImpl.from(resolutionStrategy.run(operations));
     }
 
     private <V, R extends Resolvable<V>> List<List<R>> selectNextBatches(
@@ -105,8 +106,14 @@ class EngineImpl<E> implements Engine {
         List<R> batch
     ) {
         final Class<R> cls = (Class<R>) batch.index(0).getClass();
-        final EngineResolver<E, V, R> resolver = registry.getOrThrow(cls);
+        final EngineResolver<E, V, R> resolver = registry.getResolverOrThrow(
+            cls
+        );
         return resolver.createOperations(environment, batch);
+    }
+
+    private <T> Node<T> injectResults(Node<T> node, Results results) {
+        return node.injectValues(results);
     }
 
     // --- Logging

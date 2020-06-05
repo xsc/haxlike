@@ -10,8 +10,10 @@ import haxlike.Resolvable;
 import haxlike.Results;
 import haxlike.nodes.ValueNode;
 import lombok.AccessLevel;
+import lombok.ToString;
 import lombok.experimental.FieldDefaults;
 
+@ToString
 @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
 public final class Tuple4<A, B, C, D> implements Node<P4<A, B, C, D>> {
     Node<A> a;
@@ -59,9 +61,7 @@ public final class Tuple4<A, B, C, D> implements Node<P4<A, B, C, D>> {
     }
 
     @Override
-    public <V> Node<P4<A, B, C, D>> injectValues(
-        Results<? extends Resolvable<V>, V> results
-    ) {
+    public Node<P4<A, B, C, D>> injectValues(Results results) {
         return ValueNode.ifResolved(
             new Tuple4<>(
                 a.injectValues(results),
@@ -78,18 +78,5 @@ public final class Tuple4<A, B, C, D> implements Node<P4<A, B, C, D>> {
 
     public <R> Node<R> flatMap(F4<A, B, C, D, Node<R>> f) {
         return this.flatMap(p -> f.f(p._1(), p._2(), p._3(), p._4()));
-    }
-
-    @Override
-    public String toString() {
-        return (
-            a.toString() +
-            ",\n" +
-            b.toString() +
-            ",\n" +
-            c.toString() +
-            ",\n" +
-            d.toString()
-        );
     }
 }

@@ -32,9 +32,7 @@ public class NodeDecorator<T> implements Node<T> {
     }
 
     @Override
-    public <V> Node<T> injectValues(
-        Results<? extends Resolvable<V>, V> results
-    ) {
+    public Node<T> injectValues(Results results) {
         return inner.injectValues(results);
     }
 

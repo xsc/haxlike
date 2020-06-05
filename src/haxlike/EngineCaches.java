@@ -16,9 +16,7 @@ public final class EngineCaches {
     private static class NoCache implements EngineCache {
 
         @Override
-        public <V, R extends Resolvable<V>> Results<R, V> updateAndGet(
-            Results<R, V> results
-        ) {
+        public Results updateAndGet(Results results) {
             return results;
         }
 

@@ -3,65 +3,44 @@ package haxlike;
 import static fj.P.p;
 
 import fj.F;
-import fj.P2;
 import fj.data.HashMap;
 import fj.data.List;
 import fj.data.Option;
-import java.util.function.BiConsumer;
+import haxlike.impl.ResultsImpl;
 
-public class Results<R, V> {
-    private final HashMap<R, V> values;
+public interface Results {
+    <V, T extends Resolvable<V>> Option<V> get(T resolvable);
 
-    private Results(List<P2<R, V>> tuples) {
-        this(HashMap.iterableHashMap(tuples));
+    <V, R extends Resolvable<V>> void into(HashMap<R, V> target);
+
+    default <V, T extends Resolvable<V>> V getSome(T resolvable) {
+        return this.get(resolvable).some();
     }
 
-    private Results(HashMap<R, V> values) {
-        this.values = values;
+    // --- Factories
+    public static Results empty() {
+        return new ResultsImpl();
     }
 
-    @SuppressWarnings("unchecked")
-    public <T extends Resolvable<?>> Option<V> get(T resolvable) {
-        return values.get((R) resolvable);
+    public static <R extends Resolvable<V>, V> Results single(R r, V v) {
+        return new ResultsImpl(List.single(p(r, v)));
     }
 
-    @SuppressWarnings("unchecked")
-    public <T extends Resolvable<?>> V getSome(T resolvable) {
-        return values.get((R) resolvable).some();
-    }
-
-    public void forEach(BiConsumer<R, V> f) {
-        for (R r : values.keys()) {
-            f.accept(r, values.get(r).some());
-        }
-    }
-
-    @SuppressWarnings("squid:S1319")
-    public void into(HashMap<R, V> target) {
-        forEach(target::set);
-    }
-
-    // --- Constructors
-    public static <R, V> Results<R, V> empty() {
-        return new Results<>(List.nil());
-    }
-
-    public static <R, V> Results<R, V> single(R r, V v) {
-        return new Results<>(List.single(p(r, v)));
-    }
-
-    public static <R, V> Results<R, V> map(List<R> resolvables, F<R, V> f) {
+    public static <R extends Resolvable<V>, V> Results map(
+        List<R> resolvables,
+        F<R, V> f
+    ) {
         return Results.zip(resolvables, resolvables.map(f));
     }
 
-    public static <R, V> Results<R, V> zip(
+    public static <R extends Resolvable<V>, V> Results zip(
         List<R> resolvables,
         List<V> results
     ) {
-        return new Results<>(resolvables.zip(results));
+        return new ResultsImpl(resolvables.zip(results));
     }
 
-    public static <R, V, I> Results<R, V> match(
+    public static <R extends Resolvable<V>, V, I> Results match(
         List<R> resolvables,
         F<R, I> fr,
         List<V> results,
@@ -77,32 +56,12 @@ public class Results<R, V> {
         );
     }
 
-    public static <R, V, I> Results<R, V> match(
+    public static <R extends Resolvable<V>, V, I> Results match(
         List<R> resolvables,
         F<R, I> fr,
         List<V> results,
         F<V, I> fv
     ) {
         return Results.match(resolvables, fr, results, fv, null);
-    }
-
-    // --- Wrapper around results
-    @SuppressWarnings("squid:S1319")
-    public static <R, V> Results<R, V> wrap(HashMap<R, V> values) {
-        return new Results<>(values);
-    }
-
-    // --- Merge
-    public static <R, V> Results<R, V> merge(Results<R, V> a, Results<R, V> b) {
-        final HashMap<R, V> values = HashMap.hashMap();
-        a.into(values);
-        b.into(values);
-        return new Results<>(values);
-    }
-
-    public static <R, V> Results<R, V> merge(List<Results<R, V>> results) {
-        final HashMap<R, V> values = HashMap.hashMap();
-        results.forEach(r -> r.into(values));
-        return new Results<>(values);
     }
 }

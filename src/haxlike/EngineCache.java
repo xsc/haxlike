@@ -17,7 +17,5 @@ public interface EngineCache {
      * @param results newly calculated resolution results
      * @return the full internal cache.
      */
-    <V, R extends Resolvable<V>> Results<R, V> updateAndGet(
-        Results<R, V> results
-    );
+    Results updateAndGet(Results results);
 }

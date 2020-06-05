@@ -18,9 +18,7 @@ public class MapNode<T, R> implements Node<R> {
     }
 
     @Override
-    public <V> Node<R> injectValues(
-        Results<? extends Resolvable<V>, V> results
-    ) {
+    public Node<R> injectValues(Results results) {
         return new MapNode<>(inner.injectValues(results), f);
     }
 

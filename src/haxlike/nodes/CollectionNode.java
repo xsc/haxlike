@@ -22,9 +22,7 @@ public class CollectionNode<T> implements Node<List<T>> {
     }
 
     @Override
-    public <V> Node<List<T>> injectValues(
-        Results<? extends Resolvable<V>, V> results
-    ) {
+    public Node<List<T>> injectValues(Results results) {
         final CollectionNode<T> newNode = new CollectionNode<>(
             childNodes.map(node -> node.injectValues(results))
         );

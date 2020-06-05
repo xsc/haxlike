@@ -13,7 +13,7 @@ public final class Resolver {
      */
     @FunctionalInterface
     public static interface Batched<E, V, R extends Resolvable<V>> {
-        Results<R, V> resolveAll(E environment, List<R> resolvables);
+        Results resolveAll(E environment, List<R> resolvables);
     }
 
     /**
@@ -23,7 +23,7 @@ public final class Resolver {
      */
     @FunctionalInterface
     public static interface BatchedNoEnv<V, R extends Resolvable<V>> {
-        Results<R, V> resolveAll(List<R> resolvables);
+        Results resolveAll(List<R> resolvables);
     }
 
     /**

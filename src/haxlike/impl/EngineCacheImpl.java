@@ -15,12 +15,16 @@ public class EngineCacheImpl implements EngineCache {
     }
 
     @Override
+    public Results updateAndGet(Results results) {
+        return mergeResultsIntoCache(results);
+    }
+
     @SuppressWarnings("unchecked")
-    public <V, R extends Resolvable<V>> Results<R, V> updateAndGet(
-        Results<R, V> results
+    private <R extends Resolvable<V>, V> Results mergeResultsIntoCache(
+        Results results
     ) {
         final HashMap<R, V> cacheRef = (HashMap<R, V>) cache;
         results.into(cacheRef);
-        return Results.wrap(cacheRef);
+        return new ResultsImpl(cacheRef);
     }
 }

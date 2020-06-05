@@ -3,7 +3,12 @@ package haxlike.impl;
 import fj.Ord;
 import fj.data.TreeMap;
 import haxlike.Resolvable;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.With;
 
+@RequiredArgsConstructor
+@With(AccessLevel.PRIVATE)
 final class EngineRegistry<E> {
     // --- Data
     private final TreeMap<String, EngineResolver<? super E, ?, ?>> resolvers;
@@ -12,22 +17,16 @@ final class EngineRegistry<E> {
         this(TreeMap.empty(Ord.stringOrd));
     }
 
-    private EngineRegistry(
-        TreeMap<String, EngineResolver<? super E, ?, ?>> resolvers
-    ) {
-        this.resolvers = resolvers;
-    }
-
-    // --- Register
-    public <V, R extends Resolvable<V>> EngineRegistry<E> register(
+    // --- Resolvers
+    public <V, R extends Resolvable<V>> EngineRegistry<E> registerResolver(
         Class<R> cls,
         EngineResolver<? super E, V, R> resolver
     ) {
-        return new EngineRegistry<>(resolvers.set(cls.getName(), resolver));
+        return this.withResolvers(resolvers.set(cls.getName(), resolver));
     }
 
     @SuppressWarnings("unchecked")
-    public <V, R extends Resolvable<V>> EngineResolver<E, V, R> getOrThrow(
+    public <V, R extends Resolvable<V>> EngineResolver<E, V, R> getResolverOrThrow(
         Class<R> cls
     ) {
         return (EngineResolver<E, V, R>) resolvers

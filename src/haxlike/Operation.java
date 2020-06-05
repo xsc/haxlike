@@ -7,9 +7,9 @@ import lombok.Value;
 @Value
 public class Operation<R extends Resolvable<V>, V> {
     List<R> batch;
-    F0<Results<R, V>> op;
+    F0<Results> op;
 
-    public final Results<R, V> runOperation() {
+    public final Results runOperation() {
         return op.f();
     }
 

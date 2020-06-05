@@ -39,7 +39,7 @@ public interface Node<T> {
      * @param results map of resolvables and their results.
      * @return a partially or fully resolved node with the same value type.
      */
-    <V> Node<T> injectValues(Results<? extends Resolvable<V>, V> results);
+    Node<T> injectValues(Results results);
 
     // --- Tuplers
     /**

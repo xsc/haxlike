@@ -19,9 +19,7 @@ public class FlatMapNode<T, R> implements Node<R> {
     }
 
     @Override
-    public <V> Node<R> injectValues(
-        Results<? extends Resolvable<V>, V> results
-    ) {
+    public Node<R> injectValues(Results results) {
         final Node<T> result = inner.injectValues(results);
         return result.isResolved()
             ? f.f(result.getValue())
@@ -60,9 +58,7 @@ public class FlatMapNode<T, R> implements Node<R> {
         }
 
         @Override
-        public <V> Node<R> injectValues(
-            Results<? extends Resolvable<V>, V> results
-        ) {
+        public Node<R> injectValues(Results results) {
             return resolved().injectValues(results);
         }
 

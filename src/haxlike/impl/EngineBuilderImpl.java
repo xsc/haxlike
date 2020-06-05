@@ -45,7 +45,7 @@ public class EngineBuilderImpl<E> implements EngineBuilder<E> {
         Class<R> cls,
         EngineResolver<? super E, V, R> r
     ) {
-        return this.withRegistry(registry.register(cls, r));
+        return this.withRegistry(registry.registerResolver(cls, r));
     }
 
     // --- Impl

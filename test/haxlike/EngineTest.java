@@ -23,12 +23,9 @@ public class EngineTest {
                 .build("ENV");
     }
 
-    private static Results<TestResolvable, Integer> testResolve(
-        String env,
-        List<TestResolvable> batch
-    ) {
+    private static Results testResolve(String env, List<TestResolvable> batch) {
         try {
-            Thread.sleep(1000);
+            Thread.sleep(10);
         } catch (InterruptedException e) {}
         return Results.zip(batch, batch.map(TestResolvable::getValue));
     }
@@ -38,7 +35,7 @@ public class EngineTest {
         List<SlowResolvable> batch
     ) {
         try {
-            Thread.sleep(1000);
+            Thread.sleep(10);
         } catch (InterruptedException e) {}
         return batch.map(SlowResolvable::getValue);
     }

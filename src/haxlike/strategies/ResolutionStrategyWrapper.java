@@ -10,16 +10,12 @@ import lombok.Value;
 
 @Value
 public class ResolutionStrategyWrapper implements ResolutionStrategy {
-    Strategy<?> strategy;
+    Strategy<Results> strategy;
 
     @Override
-    @SuppressWarnings("unchecked")
-    public <R extends Resolvable<V>, V> List<Results<R, V>> run(
+    public <R extends Resolvable<V>, V> List<Results> run(
         List<Operation<R, V>> operations
     ) {
-        return ((Strategy<Results<R, V>>) strategy).parMap1(
-                Operation::runOperation,
-                operations
-            );
+        return strategy.parMap1(Operation::runOperation, operations);
     }
 }
