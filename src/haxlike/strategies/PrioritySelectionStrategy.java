@@ -25,22 +25,22 @@ public class PrioritySelectionStrategy implements SelectionStrategy {
 
     // --- Adding priorities
     public PrioritySelectionStrategy withPriority(
-        Class<?> cls,
+        Class<? extends Resolvable<?>> cls,
         Integer priority
     ) {
         return this.withPriorities(priorities.set(cls, priority));
     }
 
     public PrioritySelectionStrategy withPriorityHigherThan(
-        Class<?> cls,
-        Class<?> higherThan
+        Class<? extends Resolvable<?>> cls,
+        Class<? extends Resolvable<?>> higherThan
     ) {
         return this.withPriority(cls, toPriority(higherThan) + 1);
     }
 
     public PrioritySelectionStrategy withPriorityLowerThan(
-        Class<?> cls,
-        Class<?> lowerThan
+        Class<? extends Resolvable<?>> cls,
+        Class<? extends Resolvable<?>> lowerThan
     ) {
         return this.withPriority(cls, toPriority(lowerThan) - 1);
     }
@@ -50,6 +50,10 @@ public class PrioritySelectionStrategy implements SelectionStrategy {
     public <V, R extends Resolvable<V>> List<List<R>> select(
         List<List<R>> batches
     ) {
+        if (batches.isEmpty()) {
+            return batches;
+        }
+
         return batches.groupBy(this::toPriority, Ord.intOrd).max().some()._2();
     }
 
