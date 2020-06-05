@@ -25,6 +25,19 @@ public interface EngineBuilder<E> {
     );
 
     /**
+     * Register a new resolver (batched)
+     * @param <V> value class
+     * @param <R> resolvable class producing the value
+     * @param cls resolvable class to register
+     * @param resolver resolver to register
+     * @return a new EngineBuilder that has the resolver registered
+     */
+    <V, R extends Resolvable<V>> EngineBuilder<E> withResolver(
+        Class<R> cls,
+        Resolver.BatchedNoEnv<V, R> resolver
+    );
+
+    /**
      * Register a new resolver (batched, returning a list of in-order results)
      * @param <V> value class
      * @param <R> resolvable class producing the value
@@ -47,7 +60,33 @@ public interface EngineBuilder<E> {
      */
     <V, R extends Resolvable<V>> EngineBuilder<E> withResolver(
         Class<R> cls,
+        Resolver.BatchedInOrderNoEnv<V, R> resolver
+    );
+
+    /**
+     * Register a new resolver (single)
+     * @param <V> value class
+     * @param <R> resolvable class producing the value
+     * @param cls resolvable class to register
+     * @param resolver resolver to register
+     * @return a new EngineBuilder that has the resolver registered
+     */
+    <V, R extends Resolvable<V>> EngineBuilder<E> withResolver(
+        Class<R> cls,
         Resolver.Single<? super E, V, R> resolver
+    );
+
+    /**
+     * Register a new resolver (single)
+     * @param <V> value class
+     * @param <R> resolvable class producing the value
+     * @param cls resolvable class to register
+     * @param resolver resolver to register
+     * @return a new EngineBuilder that has the resolver registered
+     */
+    <V, R extends Resolvable<V>> EngineBuilder<E> withResolver(
+        Class<R> cls,
+        Resolver.SingleNoEnv<V, R> resolver
     );
 
     /**

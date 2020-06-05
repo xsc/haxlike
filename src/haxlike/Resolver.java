@@ -17,6 +17,16 @@ public final class Resolver {
     }
 
     /**
+     * Like {@link Batched} but does not take an environment.
+     * @param <V> return value of a single resolvable
+     * @param <R> resolvable class
+     */
+    @FunctionalInterface
+    public static interface BatchedNoEnv<V, R extends Resolvable<V>> {
+        Results<R, V> resolveAll(List<R> resolvables);
+    }
+
+    /**
      * A single resolver is a function that will use a supplied environment
      * to return a single result based on a value-to-resolve.
      * @param <E> environment class
@@ -26,6 +36,16 @@ public final class Resolver {
     @FunctionalInterface
     public static interface Single<E, V, R extends Resolvable<V>> {
         V resolve(E env, R resolvable);
+    }
+
+    /**
+     * Like {@link Single} but does not take an environment.
+     * @param <V> return value of a single resolvable
+     * @param <R> resolvable class
+     */
+    @FunctionalInterface
+    public static interface SingleNoEnv<V, R extends Resolvable<V>> {
+        V resolve(R resolvable);
     }
 
     /**
@@ -40,6 +60,16 @@ public final class Resolver {
     @FunctionalInterface
     public static interface BatchedInOrder<E, V, R extends Resolvable<V>> {
         List<V> resolveAll(E environment, List<R> resolvables);
+    }
+
+    /**
+     * Like {@link BatchedInOrder} but does not take an environment.
+     * @param <V> return value of a single resolvable
+     * @param <R> resolvable class
+     */
+    @FunctionalInterface
+    public static interface BatchedInOrderNoEnv<V, R extends Resolvable<V>> {
+        List<V> resolveAll(List<R> resolvables);
     }
 
     private Resolver() {}

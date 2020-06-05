@@ -51,7 +51,23 @@ public class EngineBuilderImpl<E> implements EngineBuilder<E> {
     @Override
     public <V, R extends Resolvable<V>> EngineBuilder<E> withResolver(
         Class<R> cls,
+        Resolver.BatchedNoEnv<V, R> resolver
+    ) {
+        return register(cls, EngineResolver.from(resolver));
+    }
+
+    @Override
+    public <V, R extends Resolvable<V>> EngineBuilder<E> withResolver(
+        Class<R> cls,
         Resolver.BatchedInOrder<? super E, V, R> resolver
+    ) {
+        return register(cls, EngineResolver.from(resolver));
+    }
+
+    @Override
+    public <V, R extends Resolvable<V>> EngineBuilder<E> withResolver(
+        Class<R> cls,
+        Resolver.BatchedInOrderNoEnv<V, R> resolver
     ) {
         return register(cls, EngineResolver.from(resolver));
     }
@@ -61,7 +77,15 @@ public class EngineBuilderImpl<E> implements EngineBuilder<E> {
         Class<R> cls,
         Resolver.Single<? super E, V, R> resolver
     ) {
-        return register(cls, EngineResolver.fromSingle(resolver));
+        return register(cls, EngineResolver.from(resolver));
+    }
+
+    @Override
+    public <V, R extends Resolvable<V>> EngineBuilder<E> withResolver(
+        Class<R> cls,
+        Resolver.SingleNoEnv<V, R> resolver
+    ) {
+        return register(cls, EngineResolver.from(resolver));
     }
 
     @Override

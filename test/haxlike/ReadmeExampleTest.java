@@ -9,6 +9,12 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 public class ReadmeExampleTest {
+    private static final Engine engine = Engine
+        .builder()
+        .withResolver(Users.class, Users::resolve)
+        .withResolver(PostsByUser.class, PostsByUser::resolve)
+        .withCommonForkJoinPool()
+        .build(null);
 
     @BeforeAll
     static void setUp() {
@@ -20,13 +26,16 @@ public class ReadmeExampleTest {
         TestUtil.resetLogging();
     }
 
-    static final Engine engine = Engine
-        .builder()
-        .withResolver(Users.class, Users::resolve)
-        .withResolver(PostsByUser.class, PostsByUser::resolve)
-        .withCommonForkJoinPool()
-        .build(null);
+    // --- Fixtures
+    private static UserWithPosts expectedUser(int id) {
+        return new UserWithPosts(new User(id), expectedPosts(id));
+    }
 
+    private static List<Post> expectedPosts(int id) {
+        return List.range(1, id).map(i -> new Post(i * id));
+    }
+
+    // --- Tests
     @Test
     void readmeExample_shouldResolveCorrectly() {
         var users = Users
@@ -38,7 +47,13 @@ public class ReadmeExampleTest {
                 }
             );
 
-        assertThat(engine.resolve(users)).hasSize(4);
+        assertThat(engine.resolve(users))
+            .containsExactly(
+                expectedUser(0),
+                expectedUser(1),
+                expectedUser(2),
+                expectedUser(3)
+            );
     }
 
     @Test
@@ -50,7 +65,13 @@ public class ReadmeExampleTest {
                 user -> PostsByUser.fetch(user.getId())
             );
 
-        assertThat(engine.resolve(users)).hasSize(4);
+        assertThat(engine.resolve(users))
+            .containsExactly(
+                expectedUser(0),
+                expectedUser(1),
+                expectedUser(2),
+                expectedUser(3)
+            );
     }
 
     // --- Data
@@ -74,7 +95,7 @@ public class ReadmeExampleTest {
     @Value(staticConstructor = "fetch")
     public static class Users implements ListResolvable<User> {
 
-        public static List<User> resolve(Object env, Users resolvable) {
+        public static List<User> resolve(Users resolvable) {
             return List.range(0, 4).map(i -> new User(i));
         }
     }
@@ -83,13 +104,8 @@ public class ReadmeExampleTest {
     public static class PostsByUser implements ListResolvable<Post> {
         int userId;
 
-        public static List<List<Post>> resolve(
-            Object env,
-            List<PostsByUser> rs
-        ) {
-            return rs.map(
-                r -> List.range(1, r.userId).map(i -> new Post(i * r.userId))
-            );
+        public static List<List<Post>> resolve(List<PostsByUser> rs) {
+            return rs.map(r -> expectedPosts(r.userId));
         }
     }
 }
