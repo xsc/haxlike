@@ -62,6 +62,7 @@ class EngineImpl<E> implements Engine {
             .map(this::uniqueResolvables)
             .map(this::logResolvables)
             .map(cache::removeCached)
+            .map(this::logUncachedResolvables)
             .map(this::selectNextBatches)
             .map(this::logBatches)
             .map(this::createAllOperations)
@@ -128,12 +129,26 @@ class EngineImpl<E> implements Engine {
         return resolvables;
     }
 
+    private <V, R extends Resolvable<V>> List<R> logUncachedResolvables(
+        List<R> resolvables
+    ) {
+        if (resolvables.isEmpty()) {
+            log.trace("=> All results are already cached.");
+        } else if (resolvables.length() == 1) {
+            log.trace("=> 1 value needs to be resolved.");
+        } else {
+            log.trace(
+                "=> {} values need to be resolved.",
+                resolvables.length()
+            );
+        }
+        return resolvables;
+    }
+
     private <V, R extends Resolvable<V>> List<List<R>> logBatches(
         List<List<R>> batches
     ) {
-        if (batches.isEmpty()) {
-            log.trace("=> No batches to resolve (might be cached).");
-        } else {
+        if (batches.isNotEmpty()) {
             batches
                 .zipIndex()
                 .forEach(p -> log.trace("=> Batch[{}]: {}", p._2(), p._1()));
