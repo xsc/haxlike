@@ -24,16 +24,29 @@ class EngineImpl<E> implements Engine {
     E environment;
     ResolutionStrategy resolutionStrategy;
     SelectionStrategy selectionStrategy;
+    int maxIterationCount;
 
     @Override
     public <T> T resolve(Node<T> node, EngineCache cache) {
         Node<T> n = node;
         int iterationCount = 1;
         while (!n.isResolved()) {
+            verifyMaxDepth(iterationCount);
             logIteration(iterationCount++);
             n = resolveNext(n, cache);
         }
         return n.getValue();
+    }
+
+    private void verifyMaxDepth(int iterationCount) {
+        if (iterationCount > maxIterationCount) {
+            throw new IllegalStateException(
+                String.format(
+                    "Maximum iteration count of %d has been exceeded.",
+                    maxIterationCount
+                )
+            );
+        }
     }
 
     /**

@@ -108,6 +108,14 @@ public interface EngineBuilder<E> {
     EngineBuilder<E> withResolutionStrategy(ResolutionStrategy s);
 
     /**
+     * Set the maximum number of iteration. An engine will throw an
+     * {@link IllegalStateException} if the value is exceeded.
+     * @param depth maximum resolution depth
+     * @return a new EngineBuilder with the maximum resolution depth applied
+     */
+    EngineBuilder<E> withMaxIterationCount(int depth);
+
+    /**
      * Build an engine bound to the given environment.
      * @param environment the environment that will be available to resolvers.
      * @return an Engine instance

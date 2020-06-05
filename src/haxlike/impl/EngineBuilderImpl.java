@@ -17,17 +17,26 @@ import lombok.With;
 @ToString
 @EqualsAndHashCode
 @RequiredArgsConstructor
-@With(AccessLevel.PRIVATE)
+@With
 public class EngineBuilderImpl<E> implements EngineBuilder<E> {
-    private final EngineRegistry<E> internalRegistry;
-    private final ResolutionStrategy internalResolutionStrategy;
-    private final SelectionStrategy internalSelectionStrategy;
+    private static final int DEFAULT_MAX_ITERATION_COUNT = 16;
+
+    // --- Internal Registry
+    @With(AccessLevel.PRIVATE)
+    private final EngineRegistry<E> registry;
+
+    // --- Values that can be injected directly
+    // These are exposed using the `@With` annotation on class-level.
+    private final ResolutionStrategy resolutionStrategy;
+    private final SelectionStrategy selectionStrategy;
+    private final int maxIterationCount;
 
     public EngineBuilderImpl() {
         this(
             new EngineRegistry<>(),
             ResolutionStrategies.defaultStrategy(),
-            SelectionStrategies.defaultStrategy()
+            SelectionStrategies.defaultStrategy(),
+            DEFAULT_MAX_ITERATION_COUNT
         );
     }
 
@@ -36,7 +45,7 @@ public class EngineBuilderImpl<E> implements EngineBuilder<E> {
         Class<R> cls,
         EngineResolver<? super E, V, R> r
     ) {
-        return this.withInternalRegistry(internalRegistry.register(cls, r));
+        return this.withRegistry(registry.register(cls, r));
     }
 
     // --- Impl
@@ -89,23 +98,14 @@ public class EngineBuilderImpl<E> implements EngineBuilder<E> {
     }
 
     @Override
-    public EngineBuilder<E> withResolutionStrategy(ResolutionStrategy s) {
-        return this.withInternalResolutionStrategy(s);
-    }
-
-    @Override
-    public EngineBuilder<E> withSelectionStrategy(SelectionStrategy s) {
-        return this.withInternalSelectionStrategy(s);
-    }
-
-    @Override
     public Engine build(E environment) {
         return EngineImpl
             .<E>builder()
             .environment(environment)
-            .registry(internalRegistry)
-            .resolutionStrategy(internalResolutionStrategy)
-            .selectionStrategy(internalSelectionStrategy)
+            .registry(registry)
+            .resolutionStrategy(resolutionStrategy)
+            .selectionStrategy(selectionStrategy)
+            .maxIterationCount(maxIterationCount)
             .build();
     }
 }
