@@ -100,10 +100,24 @@ public interface ListNode<T> extends Node<List<T>> {
             );
     }
 
+    /**
+     * Apply left fold function across this list's element.
+     * @param <R> accumulator class
+     * @param f fold function
+     * @param acc accumulator
+     * @return result of applying the fold function to the accumulator and every element.
+     */
     default <R> Node<R> foldLeft(F2<R, T, R> f, R acc) {
         return this.map(xs -> xs.foldLeft(f, acc));
     }
 
+    /**
+     * Apply right fold function across this list's element.
+     * @param <R> accumulator class
+     * @param f fold function
+     * @param acc accumulator
+     * @return result of applying the fold function to the accumulator and every element.
+     */
     default <R> Node<R> foldRight(F2<T, R, R> f, R acc) {
         return this.map(xs -> xs.foldRight(f, acc));
     }

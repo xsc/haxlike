@@ -55,6 +55,16 @@ public class Nodes {
     }
 
     /**
+     * Create list node consisting of other nodes.
+     * @param <T> class of the elements
+     * @param elements element nodes
+     * @return node representing a list of the given values.
+     */
+    public static <T> ListNode<T> list(List<Node<T>> elements) {
+        return asList(new CollectionNode<>(elements));
+    }
+
+    /**
      * Decorate node with list-specific functionality, like {@link ListNode#traverse(F)}.
      * @param <T> element value cleass
      * @param node node to decorate
