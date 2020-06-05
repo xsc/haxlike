@@ -27,13 +27,17 @@ public class SelectProjection<T, R> implements Projection<T> {
 
     @Override
     public Node<T> project(Node<T> node) {
-        return base.project(node).flatMap(this::attachRelation);
+        final Node<T> inner = base.project(node);
+        return Nodes
+            .tuple(inner, createRelationNode(node))
+            .map(this::attachRelation);
     }
 
-    private Node<T> attachRelation(T value) {
-        final Node<R> relNode = relation.getNodeFunction().f(value);
-        return Nodes
-            .tuple(Nodes.value(value), projection.project(relNode))
-            .map(relation.getAttachFunction());
+    private Node<R> createRelationNode(Node<T> node) {
+        return projection.project(node.flatMap(relation.getNodeFunction()));
+    }
+
+    private T attachRelation(T value, R relationResult) {
+        return relation.getAttachFunction().f(value, relationResult);
     }
 }
