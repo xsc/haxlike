@@ -20,42 +20,57 @@ public interface Projection<T> {
     Node<T> project(Node<T> node);
 
     /**
-     * Create an identity projection for the given class. Calling this projection
-     * on a node will not alter the node.
-     * @param <T> class this projection applies to
-     * @param cls class reference this projection applies to
-     * @return a new identity projection
+     * Add another projection to be applied.
+     * @param projection next projection to be applied
+     * @return a new projection that combines the current one and the given one
      */
-    @SuppressWarnings("squid:S1172")
-    static <T> Projection<T> projection(Class<T> cls) {
-        return new IdentityProjection<>();
+    default Projection<T> and(AndProjection<T> projection) {
+        return projection.wrap(this);
     }
 
     /**
-     * Add a relation to this projection.
+     * Add a projection that represents a single relation on the target entity
+     * @param <T> node value class
      * @param <R> relation value class
      * @param relation relation to add to the projection
      * @param projection projection to apply to the relation value
      * @return a projection that will attach the given relation to the projected node
      */
-    default <V, R extends Resolvable<V>> Projection<T> select(
+    default <V, R extends Resolvable<V>> Projection<T> andSelect(
         Relation<T, V, R> relation,
         Projection<V> projection
     ) {
-        return new SelectProjection<>(this, relation, projection);
+        return this.and(select(relation, projection));
     }
 
     /**
-     * Add a relation to this projection.
+     * Add a projection that represents a single relation on the target entity
+     * @param <T> node value class
      * @param <R> relation value class
      * @param relation relation to add to the projection
      * @return a projection that will attach the given relation to the projected node
      */
-    @SuppressWarnings("varargs")
-    default <V, R extends Resolvable<V>> Projection<T> select(
+    default <V, R extends Resolvable<V>> Projection<T> andSelect(
         Relation<T, V, R> relation
     ) {
-        return select(relation, new IdentityProjection<>());
+        return this.and(select(relation));
+    }
+
+    /**
+     * Add a projection that represents a list relation on the given entity,
+     * applying the given sub-projection to every value
+     * @param <T> node value class
+     * @param <R> relation value class
+     * @param <V> list element class
+     * @param relation relation to add to the projection
+     * @param projection projection to apply to each element of the relation's result
+     * @return a projection that will attach the given relation to every element of the relation's result
+     */
+    default <V, R extends Resolvable<List<V>>> Projection<T> andSelectList(
+        Relation<T, List<V>, R> relation,
+        Projection<V> projection
+    ) {
+        return this.and(selectList(relation, projection));
     }
 
     /**
@@ -68,10 +83,70 @@ public interface Projection<T> {
     }
 
     /**
+     * Projection that can be chained with another.
+     * @param <T> node value class
+     */
+    @FunctionalInterface
+    public interface AndProjection<T> extends Projection<T> {
+        Projection<T> wrap(Projection<T> projection);
+
+        @Override
+        default Node<T> project(Node<T> node) {
+            return this.wrap(new IdentityProjection<>()).project(node);
+        }
+    }
+
+    /**
+     * Create a projection that represents a single relation on the target entity
+     * @param <T> node value class
+     * @param <R> relation value class
+     * @param relation relation to add to the projection
+     * @param projection projection to apply to the relation value
+     * @return a projection that will attach the given relation to the projected node
+     */
+    static <T, V, R extends Resolvable<V>> AndProjection<T> select(
+        Relation<T, V, R> relation,
+        Projection<V> projection
+    ) {
+        return p -> new SelectProjection<>(p, relation, projection);
+    }
+
+    /**
+     * Create a projection that represents a single relation on the target entity
+     * @param <T> node value class
+     * @param <R> relation value class
+     * @param relation relation to add to the projection
+     * @return a projection that will attach the given relation to the projected node
+     */
+    static <T, V, R extends Resolvable<V>> AndProjection<T> select(
+        Relation<T, V, R> relation
+    ) {
+        return p ->
+            new SelectProjection<>(p, relation, new IdentityProjection<>());
+    }
+
+    /**
+     * Create a projection that represents a list relation on the given entity,
+     * applying the given sub-projection to every value
+     * @param <T> node value class
+     * @param <R> relation value class
+     * @param <V> list element class
+     * @param relation relation to add to the projection
+     * @param projection projection to apply to each element of the relation's result
+     * @return a projection that will attach the given relation to every element of the relation's result
+     */
+    static <T, V, R extends Resolvable<List<V>>> AndProjection<T> selectList(
+        Relation<T, List<V>, R> relation,
+        Projection<V> projection
+    ) {
+        return select(relation, new ListProjection<>(projection));
+    }
+
+    /**
      * Logs the currently projected value.
      * @return a projection that will cause the projected node's value to be logged
      */
-    default Projection<T> inspect() {
-        return new InspectProjection<>(this);
+    static <T> AndProjection<T> inspect() {
+        return InspectProjection::new;
     }
 }
