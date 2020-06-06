@@ -124,7 +124,7 @@ public interface Node<T> {
      * @param f the function to apply.
      * @return a new node representing the result of applying the function.
      */
-    default <R> Node<R> flatMap(F<T, Node<R>> f) {
+    default <R> Node<R> flatMap(F<T, ? extends Node<R>> f) {
         if (this.isResolved()) {
             return new FlatMapNode.Resolved<>(this, f);
         } else {

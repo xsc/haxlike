@@ -11,7 +11,7 @@ import lombok.Value;
 @Value
 public class FlatMapNode<T, R> implements Node<R> {
     Node<T> inner;
-    F<T, Node<R>> f;
+    F<T, ? extends Node<R>> f;
 
     @Override
     public List<Resolvable<?>> getResolvables() {
@@ -41,7 +41,7 @@ public class FlatMapNode<T, R> implements Node<R> {
     @Value
     public static class Resolved<T, R> implements Node<R> {
         Node<T> inner;
-        F<T, Node<R>> f;
+        F<T, ? extends Node<R>> f;
 
         // --- Cache Value
         private final AtomicReference<Node<R>> resolvedNode = new AtomicReference<>();
