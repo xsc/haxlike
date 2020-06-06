@@ -7,7 +7,8 @@ import haxlike.Relation;
 import lombok.Value;
 
 @Value
-public class RelationImpl<T, R> implements Relation<T, R> {
+public class RelationImpl<T, R, N extends Node<R>>
+    implements Relation<T, R, N> {
     F2<T, R, T> attachFunction;
-    F<T, Node<R>> nodeFunction;
+    F<T, N> nodeFunction;
 }

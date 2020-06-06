@@ -11,12 +11,12 @@ import haxlike.impl.RelationImpl;
  * @param <T> class of the container value
  * @param <R> class of the relation
  */
-public interface Relation<T, R> {
+public interface Relation<T, R, N extends Node<R>> {
     /**
      * Node representing the relation value.
      * @return the node whose resolution will result in the relation value
      */
-    F<T, Node<R>> getNodeFunction();
+    F<T, N> getNodeFunction();
 
     /**
      * Attach the relation to the value.
@@ -34,9 +34,9 @@ public interface Relation<T, R> {
      * @param nodeFunction node creation function
      * @return the desired relation
      */
-    static <T, R> Relation<T, R> declare(
+    static <T, R, N extends Node<R>> Relation<T, R, N> declare(
         F2<T, R, T> attachFunction,
-        F<T, Node<R>> nodeFunction
+        F<T, N> nodeFunction
     ) {
         return new RelationImpl<>(attachFunction, nodeFunction);
     }

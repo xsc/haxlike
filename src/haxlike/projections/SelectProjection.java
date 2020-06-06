@@ -15,12 +15,13 @@ import lombok.Value;
  * @param <R> relation value class
  */
 @Value
-public class SelectProjection<T, R> implements Projection<T> {
+public class SelectProjection<T, R, N extends Node<R>>
+    implements Projection<T> {
     @NonNull
     Projection<T> base;
 
     @NonNull
-    Relation<T, R> relation;
+    Relation<T, R, N> relation;
 
     @NonNull
     Projection<R> projection;
