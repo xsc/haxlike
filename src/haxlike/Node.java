@@ -246,4 +246,13 @@ public interface Node<T> {
     ) {
         return this.juxtSelf(firstAttachment, secondAttachment).map(attach);
     }
+
+    /**
+     * Apply the given projection to this node.
+     * @param projection projection to apply
+     * @return node with the projection applied
+     */
+    default Node<T> project(Projection<T> projection) {
+        return projection.project(this);
+    }
 }
