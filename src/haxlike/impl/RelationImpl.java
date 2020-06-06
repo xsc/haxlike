@@ -2,13 +2,13 @@ package haxlike.impl;
 
 import fj.F;
 import fj.F2;
-import haxlike.Node;
 import haxlike.Relation;
+import haxlike.Resolvable;
 import lombok.Value;
 
 @Value
-public class RelationImpl<T, R, N extends Node<R>>
-    implements Relation<T, R, N> {
-    F2<T, R, T> attachFunction;
-    F<T, N> nodeFunction;
+public class RelationImpl<T, V, R extends Resolvable<V>>
+    implements Relation<T, V, R> {
+    F2<T, V, T> attachFunction;
+    F<T, R> nodeFunction;
 }

@@ -38,9 +38,9 @@ public interface Projection<T> {
      * @param projection projection to apply to the relation value
      * @return a projection that will attach the given relation to the projected node
      */
-    default <R, N extends Node<R>> Projection<T> select(
-        Relation<T, R, N> relation,
-        Projection<R> projection
+    default <V, R extends Resolvable<V>> Projection<T> select(
+        Relation<T, V, R> relation,
+        Projection<V> projection
     ) {
         return new SelectProjection<>(this, relation, projection);
     }
@@ -52,8 +52,8 @@ public interface Projection<T> {
      * @return a projection that will attach the given relation to the projected node
      */
     @SuppressWarnings("varargs")
-    default <R, N extends Node<R>> Projection<T> select(
-        Relation<T, R, N> relation
+    default <V, R extends Resolvable<V>> Projection<T> select(
+        Relation<T, V, R> relation
     ) {
         return select(relation, new IdentityProjection<>());
     }

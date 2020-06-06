@@ -4,6 +4,7 @@ import haxlike.Node;
 import haxlike.Nodes;
 import haxlike.Projection;
 import haxlike.Relation;
+import haxlike.Resolvable;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -15,16 +16,16 @@ import lombok.Value;
  * @param <R> relation value class
  */
 @Value
-public class SelectProjection<T, R, N extends Node<R>>
+public class SelectProjection<T, V, R extends Resolvable<V>>
     implements Projection<T> {
     @NonNull
     Projection<T> base;
 
     @NonNull
-    Relation<T, R, N> relation;
+    Relation<T, V, R> relation;
 
     @NonNull
-    Projection<R> projection;
+    Projection<V> projection;
 
     @Override
     public Node<T> project(Node<T> node) {
@@ -34,11 +35,11 @@ public class SelectProjection<T, R, N extends Node<R>>
             .map(this::attachRelation);
     }
 
-    private Node<R> createRelationNode(Node<T> node) {
+    private Node<V> createRelationNode(Node<T> node) {
         return projection.project(node.flatMap(relation.getNodeFunction()));
     }
 
-    private T attachRelation(T value, R relationResult) {
+    private T attachRelation(T value, V relationResult) {
         return relation.getAttachFunction().f(value, relationResult);
     }
 }
