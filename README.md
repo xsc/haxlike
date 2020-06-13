@@ -4,6 +4,24 @@ A Java experiment for declarative data fetching, akin to [haxl][].
 
 [haxl]: https://github.com/facebook/Haxl
 
+## Features
+
+There are a few things that can make data fetching more efficient:
+
+- **Batching:** Run queries for group of similar entities instead of one by one.
+- **Parallelism:** Run independent queries in parallel instead of sequentially.
+- **Deduplication:** Don't include the same entity multiple times in a single query.
+- **Caching:** Don't fetch an entity more than once.
+
+Adding these often comes at significant cost, either in pure time spent on
+implementation, code readability or verbosity. [haxl][] and its companions allow
+you to get rid of that overhead.
+
+An alternative to the [haxl][] approach is the one employed by [dataloader][], which
+is a good fit if you prefer a more imperative look and feel over a functional one.
+
+[dataloader]: https://github.com/graphql/dataloader
+
 ## Declarative Data Fetching
 
 To understand what haxlike does, consider the following code:
@@ -34,11 +52,6 @@ engine.resolve(users);
 
 You need one more line to actually trigger the data fetching but behind the scenes
 the engine will take care of:
-
-- **Batching:** Run queries for group of similar entities instead of one by one.
-- **Parallelism:**: Run independent queries in parallel instead of sequentially.
-- **Deduplication:** Don't include the same entity multiple times in a query.
-- **Caching**: Don't fetch an entity more than once.
 
 On top of that, haxlike provides a functional style based on immutable data
 structures, with useful traversal and manipulation functions for the most
