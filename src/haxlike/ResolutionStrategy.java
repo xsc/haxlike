@@ -8,7 +8,5 @@ import fj.data.List;
  * resolution.
  */
 public interface ResolutionStrategy {
-    <R extends Resolvable<V>, V> List<Results> run(
-        List<Operation<R, V>> operations
-    );
+    List<Results> run(List<Operation> operations);
 }

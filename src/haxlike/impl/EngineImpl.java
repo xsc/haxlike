@@ -81,9 +81,7 @@ class EngineImpl<E> implements Engine {
         return s.toList();
     }
 
-    private <V, R extends Resolvable<V>> Results runOperations(
-        List<Operation<R, V>> operations
-    ) {
+    private Results runOperations(List<Operation> operations) {
         return ResultsImpl.from(resolutionStrategy.run(operations));
     }
 
@@ -96,14 +94,14 @@ class EngineImpl<E> implements Engine {
         return selectionStrategy.select(allBatches);
     }
 
-    private <V, R extends Resolvable<V>> List<Operation<R, V>> createAllOperations(
+    private <V, R extends Resolvable<V>> List<Operation> createAllOperations(
         List<List<R>> batches
     ) {
         return batches.bind(this::createOperations);
     }
 
     @SuppressWarnings("unchecked")
-    private <V, R extends Resolvable<V>> List<Operation<R, V>> createOperations(
+    private <V, R extends Resolvable<V>> List<Operation> createOperations(
         List<R> batch
     ) {
         final Class<R> cls = (Class<R>) batch.index(0).getClass();

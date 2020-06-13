@@ -26,7 +26,7 @@ interface EngineResolver<E, V, R extends Resolvable<V>> {
      * @param batch
      * @return
      */
-    List<Operation<R, V>> createOperations(E env, List<R> batch);
+    List<Operation> createOperations(E env, List<R> batch);
 
     static <E, V, R extends Resolvable<V>> EngineResolver<E, V, R> from(
         Resolver.Batched<? super E, V, R> r
@@ -73,27 +73,22 @@ interface EngineResolver<E, V, R extends Resolvable<V>> {
     }
 
     // --- Helpers
-    private static <E, V, R extends Resolvable<V>> List<Operation<R, V>> runBatchedResolver(
+    private static <E, V, R extends Resolvable<V>> List<Operation> runBatchedResolver(
         Resolver.Batched<? super E, V, R> r,
         E env,
         List<R> batch
     ) {
-        return List.single(
-            new Operation<>(batch, () -> r.resolveAll(env, batch))
-        );
+        return List.single(() -> r.resolveAll(env, batch));
     }
 
-    private static <E, V, R extends Resolvable<V>> List<Operation<R, V>> runSingleResolver(
+    private static <E, V, R extends Resolvable<V>> List<Operation> runSingleResolver(
         Resolver.Single<? super E, V, R> r,
         E env,
         List<R> batch
     ) {
         return batch.map(
             resolvable ->
-                new Operation<>(
-                    List.single(resolvable),
-                    () -> Results.single(resolvable, r.resolve(env, resolvable))
-                )
+                () -> Results.single(resolvable, r.resolve(env, resolvable))
         );
     }
 }
