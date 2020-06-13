@@ -1,9 +1,10 @@
-package haxlike.projections;
+package haxlike.projections.impl;
 
 import fj.data.List;
 import haxlike.Node;
 import haxlike.Nodes;
-import haxlike.Projection;
+import haxlike.projections.Projection;
+import lombok.NonNull;
 import lombok.Value;
 
 /**
@@ -13,6 +14,7 @@ import lombok.Value;
  */
 @Value
 public class ListProjection<T> implements Projection<List<T>> {
+    @NonNull
     Projection<T> projection;
 
     @Override

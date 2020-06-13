@@ -1,7 +1,8 @@
-package haxlike.projections;
+package haxlike.projections.impl;
 
 import haxlike.Node;
-import haxlike.Projection;
+import haxlike.projections.Projection;
+import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 
@@ -13,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Value
 public class InspectProjection<T> implements Projection<T> {
+    @NonNull
     Projection<T> base;
 
     @Override

@@ -4,12 +4,42 @@ import static haxlike.Nodes.*;
 import static org.assertj.core.api.Assertions.*;
 
 import fj.data.List;
+import haxlike.resolvers.Provider;
+import haxlike.resolvers.Resolver;
+import haxlike.resolvers.Results;
 import lombok.Value;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public class EngineTest {
     Engine engine;
+
+    public static final Resolver<Object, Integer, Integer> TestValue = Resolver.declare(
+        "Resolver",
+        (List<Integer> values) -> values
+    );
+
+    public static final Resolver<Object, Integer, Integer> TestValueSingle = Resolver.declare(
+        "Single",
+        (Integer value) -> value
+    );
+
+    public static final Provider<Object, Integer> TestList = Provider.declare(
+        "Provider",
+        env -> 1
+    );
+
+    @BeforeAll
+    static void setUpAll() {
+        TestUtil.setTraceLogging();
+    }
+
+    @AfterAll
+    static void tearDown() {
+        TestUtil.resetLogging();
+    }
 
     @BeforeEach
     void setUp() {
@@ -18,12 +48,18 @@ public class EngineTest {
                 .<String>builder()
                 .withResolver(TestResolvable.class, EngineTest::testResolve)
                 .withResolver(SlowResolvable.class, EngineTest::slowResolve)
+                .withResolver(TestValue)
+                .withResolver(TestValueSingle)
+                .withResolver(TestList)
                 .withCommonForkJoinPool()
-                .withSelectionStrategy(SelectionStrategies.maxStrategy(2))
+                .withSelectionStrategy(SelectionStrategies.maxStrategy(3))
                 .build("ENV");
     }
 
-    private static Results testResolve(String env, List<TestResolvable> batch) {
+    private static Results<TestResolvable, Integer> testResolve(
+        String env,
+        List<TestResolvable> batch
+    ) {
         try {
             Thread.sleep(10);
         } catch (InterruptedException e) {}
@@ -44,6 +80,25 @@ public class EngineTest {
     void resolve_shouldResolveValueNode() {
         Node<Integer> node = value(1);
         Integer expected = 1;
+
+        assertThat(engine.resolve(node)).isEqualTo(expected);
+    }
+
+    @Test
+    void resolve_shouldResolveDeclared() {
+        Node<Integer> node = Nodes
+            .list(
+                TestList.fetch(),
+                TestValue.fetch(0),
+                TestValue.fetch(-1),
+                TestList.fetch(),
+                TestValueSingle.fetch(-1),
+                TestValue.fetch(5)
+            )
+            .foldLeft((a, b) -> a + b, 0);
+        Integer expected = 5;
+
+        assertThat(TestList.provide(null)).isEqualTo(1);
 
         assertThat(engine.resolve(node)).isEqualTo(expected);
     }

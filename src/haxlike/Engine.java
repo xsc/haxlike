@@ -3,9 +3,9 @@ package haxlike;
 import haxlike.impl.EngineBuilderImpl;
 
 public interface Engine {
-    <T> T resolve(Node<T> node, EngineCache cache);
+    <T> T resolve(PlainNode<T> node, EngineCache cache);
 
-    default <T> T resolve(Node<T> node) {
+    default <T> T resolve(PlainNode<T> node) {
         return resolve(node, EngineCaches.defaultCache());
     }
 

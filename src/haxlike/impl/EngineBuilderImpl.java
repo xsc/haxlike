@@ -5,9 +5,9 @@ import haxlike.EngineBuilder;
 import haxlike.ResolutionStrategies;
 import haxlike.ResolutionStrategy;
 import haxlike.Resolvable;
-import haxlike.Resolver;
 import haxlike.SelectionStrategies;
 import haxlike.SelectionStrategy;
+import haxlike.resolvers.ResolverDefinition;
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
@@ -40,61 +40,12 @@ public class EngineBuilderImpl<E> implements EngineBuilder<E> {
         );
     }
 
-    // --- Helper
-    private <V, R extends Resolvable<V>> EngineBuilderImpl<E> register(
-        Class<R> cls,
-        EngineResolver<? super E, V, R> r
-    ) {
-        return this.withRegistry(registry.registerResolver(cls, r));
-    }
-
     // --- Impl
     @Override
     public <V, R extends Resolvable<V>> EngineBuilder<E> withResolver(
-        Class<R> cls,
-        Resolver.Batched<? super E, V, R> resolver
+        ResolverDefinition<? super E, R, V> resolver
     ) {
-        return register(cls, EngineResolver.from(resolver));
-    }
-
-    @Override
-    public <V, R extends Resolvable<V>> EngineBuilder<E> withResolver(
-        Class<R> cls,
-        Resolver.BatchedNoEnv<V, R> resolver
-    ) {
-        return register(cls, EngineResolver.from(resolver));
-    }
-
-    @Override
-    public <V, R extends Resolvable<V>> EngineBuilder<E> withResolver(
-        Class<R> cls,
-        Resolver.BatchedInOrder<? super E, V, R> resolver
-    ) {
-        return register(cls, EngineResolver.from(resolver));
-    }
-
-    @Override
-    public <V, R extends Resolvable<V>> EngineBuilder<E> withResolver(
-        Class<R> cls,
-        Resolver.BatchedInOrderNoEnv<V, R> resolver
-    ) {
-        return register(cls, EngineResolver.from(resolver));
-    }
-
-    @Override
-    public <V, R extends Resolvable<V>> EngineBuilder<E> withResolver(
-        Class<R> cls,
-        Resolver.Single<? super E, V, R> resolver
-    ) {
-        return register(cls, EngineResolver.from(resolver));
-    }
-
-    @Override
-    public <V, R extends Resolvable<V>> EngineBuilder<E> withResolver(
-        Class<R> cls,
-        Resolver.SingleNoEnv<V, R> resolver
-    ) {
-        return register(cls, EngineResolver.from(resolver));
+        return this.withRegistry(registry.registerResolver(resolver));
     }
 
     @Override

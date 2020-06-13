@@ -1,4 +1,4 @@
-package haxlike;
+package haxlike.resolvers;
 
 import static fj.P.p;
 
@@ -6,41 +6,41 @@ import fj.F;
 import fj.data.HashMap;
 import fj.data.List;
 import fj.data.Option;
+import haxlike.Resolvable;
 import haxlike.impl.ResultsImpl;
 
-public interface Results {
-    <V, T extends Resolvable<V>> Option<V> get(T resolvable);
+public interface Results<R, V> {
+    Option<V> get(R value);
 
-    <V, R extends Resolvable<V>> void into(HashMap<R, V> target);
+    void into(HashMap<R, V> target);
 
-    default <V, T extends Resolvable<V>> V getSome(T resolvable) {
-        return this.get(resolvable).some();
+    <T> Results<T, V> mapKeys(F<R, T> f);
+
+    default V getSome(R value) {
+        return this.get(value).some();
     }
 
     // --- Factories
-    public static Results empty() {
-        return new ResultsImpl();
+    public static <R, V> Results<R, V> empty() {
+        return new ResultsImpl<>();
     }
 
-    public static <R extends Resolvable<V>, V> Results single(R r, V v) {
-        return new ResultsImpl(List.single(p(r, v)));
+    public static <R, V> Results<R, V> single(R r, V v) {
+        return new ResultsImpl<>(List.single(p(r, v)));
     }
 
-    public static <R extends Resolvable<V>, V> Results map(
-        List<R> resolvables,
-        F<R, V> f
-    ) {
+    public static <R, V> Results<R, V> map(List<R> resolvables, F<R, V> f) {
         return Results.zip(resolvables, resolvables.map(f));
     }
 
-    public static <R extends Resolvable<V>, V> Results zip(
+    public static <R, V> Results<R, V> zip(
         List<R> resolvables,
         List<V> results
     ) {
-        return new ResultsImpl(resolvables.zip(results));
+        return new ResultsImpl<>(resolvables.zip(results));
     }
 
-    public static <R extends Resolvable<V>, V, I> Results match(
+    public static <R, V, I> Results<R, V> match(
         List<R> resolvables,
         F<R, I> fr,
         List<V> results,
@@ -56,7 +56,7 @@ public interface Results {
         );
     }
 
-    public static <R extends Resolvable<V>, V, I> Results match(
+    public static <R extends Resolvable<V>, V, I> Results<R, V> match(
         List<R> resolvables,
         F<R, I> fr,
         List<V> results,

@@ -1,12 +1,19 @@
-package haxlike;
+package haxlike.traits;
 
 import fj.F;
 import fj.F2;
 import fj.F3;
 import fj.data.List;
+import haxlike.Node;
+import haxlike.Nodes;
+import haxlike.PlainNode;
 import haxlike.nodes.CollectionNode;
 import haxlike.nodes.NodeDecorator;
 
+/**
+ * Trait to enrich a {@link Node} containing a list with useful list traversal functions.
+ * @param <T> list element class
+ */
 public interface ListNode<T> extends Node<List<T>> {
     /**
      * Similar to {@link ListNode#flatMapEach} but will pass {@link Node} values
@@ -16,7 +23,7 @@ public interface ListNode<T> extends Node<List<T>> {
      * @param f mapper function
      * @return a node containing a list of results.
      */
-    default <R> ListNode<R> traverse(F<Node<T>, Node<R>> f) {
+    default <R> ListNode<R> traverse(F<Node<T>, ? extends Node<R>> f) {
         return this.flatMapEach(value -> f.f(Nodes.value(value)));
     }
 
@@ -39,7 +46,7 @@ public interface ListNode<T> extends Node<List<T>> {
      * @param f mapper function
      * @return a node containing a list of results
      */
-    default <R> ListNode<R> flatMapEach(F<T, Node<R>> f) {
+    default <R> ListNode<R> flatMapEach(F<T, ? extends PlainNode<R>> f) {
         return new Decorator<>(
             this.flatMap(xs -> new CollectionNode<>(xs.map(f)))
         );
@@ -53,6 +60,32 @@ public interface ListNode<T> extends Node<List<T>> {
      */
     default <R> ListNode<R> mapEach(F<T, R> f) {
         return new Decorator<>(this.map(xs -> xs.map(f)));
+    }
+
+    /**
+     * Apply left fold function across this list's element.
+     * @param <R> accumulator class
+     * @param f fold function
+     * @param acc accumulator
+     * @return result of applying the fold function to the accumulator and every element.
+     */
+    default <R> Node<R> foldLeft(F2<R, T, R> f, R acc) {
+        return this.map(xs -> xs.foldLeft(f, acc));
+    }
+
+    /**
+     * Apply right fold function across this list's element.
+     * @param <R> accumulator class
+     * @param f fold function
+     * @param acc accumulator
+     * @return result of applying the fold function to the accumulator and every element.
+     */
+    default <R> Node<R> foldRight(F2<T, R, R> f, R acc) {
+        return this.map(xs -> xs.foldRight(f, acc));
+    }
+
+    public static <T> ListNode<T> decorate(PlainNode<List<T>> node) {
+        return new Decorator<>(node);
     }
 
     /**
@@ -95,31 +128,12 @@ public interface ListNode<T> extends Node<List<T>> {
         return this.flatMapEach(
                 value ->
                     Nodes
-                        .value(value)
-                        .attach(attach, firstAttachment, secondAttachment)
+                        .tuple(
+                            firstAttachment.f(value),
+                            secondAttachment.f(value)
+                        )
+                        .map((a, b) -> attach.f(value, a, b))
             );
-    }
-
-    /**
-     * Apply left fold function across this list's element.
-     * @param <R> accumulator class
-     * @param f fold function
-     * @param acc accumulator
-     * @return result of applying the fold function to the accumulator and every element.
-     */
-    default <R> Node<R> foldLeft(F2<R, T, R> f, R acc) {
-        return this.map(xs -> xs.foldLeft(f, acc));
-    }
-
-    /**
-     * Apply right fold function across this list's element.
-     * @param <R> accumulator class
-     * @param f fold function
-     * @param acc accumulator
-     * @return result of applying the fold function to the accumulator and every element.
-     */
-    default <R> Node<R> foldRight(F2<T, R, R> f, R acc) {
-        return this.map(xs -> xs.foldRight(f, acc));
     }
 
     /**
@@ -131,7 +145,7 @@ public interface ListNode<T> extends Node<List<T>> {
         extends NodeDecorator<List<T>>
         implements ListNode<T> {
 
-        Decorator(Node<List<T>> inner) {
+        Decorator(PlainNode<List<T>> inner) {
             super(inner);
         }
     }

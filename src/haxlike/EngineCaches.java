@@ -2,6 +2,7 @@ package haxlike;
 
 import fj.data.List;
 import haxlike.impl.EngineCacheImpl;
+import haxlike.resolvers.Results;
 
 public final class EngineCaches {
 
@@ -16,7 +17,9 @@ public final class EngineCaches {
     private static class NoCache implements EngineCache {
 
         @Override
-        public Results updateAndGet(Results results) {
+        public <R extends Resolvable<V>, V> Results<R, V> updateAndGet(
+            Results<R, V> results
+        ) {
             return results;
         }
 

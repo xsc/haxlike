@@ -4,6 +4,7 @@ import fj.*;
 import fj.data.List;
 import haxlike.nodes.*;
 import haxlike.nodes.tuples.*;
+import haxlike.traits.ListNode;
 
 public class Nodes {
 
@@ -25,7 +26,7 @@ public class Nodes {
      * @return a decorated list node
      */
     public static <T> ListNode<T> value(List<T> values) {
-        return new ListNode.Decorator<>(new ValueNode<>(values));
+        return ListNode.decorate(new ValueNode<>(values));
     }
 
     /**
@@ -37,9 +38,7 @@ public class Nodes {
     @SafeVarargs
     @SuppressWarnings("varargs")
     public static <T> ListNode<T> value(T... values) {
-        return new ListNode.Decorator<>(
-            new ValueNode<>(List.arrayList(values))
-        );
+        return ListNode.decorate(new ValueNode<>(List.arrayList(values)));
     }
 
     /**
@@ -50,7 +49,7 @@ public class Nodes {
      */
     @SafeVarargs
     @SuppressWarnings("varargs")
-    public static <T> ListNode<T> list(Node<T>... elements) {
+    public static <T> ListNode<T> list(PlainNode<T>... elements) {
         return asList(new CollectionNode<>(List.arrayList(elements)));
     }
 
@@ -60,7 +59,7 @@ public class Nodes {
      * @param elements element nodes
      * @return node representing a list of the given values.
      */
-    public static <T> ListNode<T> list(List<Node<T>> elements) {
+    public static <T> ListNode<T> list(List<PlainNode<T>> elements) {
         return asList(new CollectionNode<>(elements));
     }
 
@@ -70,8 +69,8 @@ public class Nodes {
      * @param node node to decorate
      * @return a decorated list node
      */
-    public static <T> ListNode<T> asList(Node<List<T>> node) {
-        return new ListNode.Decorator<>(node);
+    public static <T> ListNode<T> asList(PlainNode<List<T>> node) {
+        return ListNode.decorate(node);
     }
 
     /**
@@ -83,7 +82,7 @@ public class Nodes {
      */
     public static <T, R> ListNode<R> flatMapEach(
         Node<List<T>> node,
-        F<T, Node<R>> f
+        F<T, PlainNode<R>> f
     ) {
         return asList(node).flatMapEach(f);
     }
@@ -97,29 +96,29 @@ public class Nodes {
      */
     public static <T, R> ListNode<R> flatMapEach(
         List<T> values,
-        F<T, Node<R>> f
+        F<T, ? extends PlainNode<R>> f
     ) {
         return value(values).flatMapEach(f);
     }
 
     // --- Tuples
-    public static <A, B> Tuple2<A, B> tuple(Node<A> a, Node<B> b) {
+    public static <A, B> Tuple2<A, B> tuple(PlainNode<A> a, PlainNode<B> b) {
         return new Tuple2<>(a, b);
     }
 
     public static <A, B, C> Tuple3<A, B, C> tuple(
-        Node<A> a,
-        Node<B> b,
-        Node<C> c
+        PlainNode<A> a,
+        PlainNode<B> b,
+        PlainNode<C> c
     ) {
         return new Tuple3<>(a, b, c);
     }
 
     public static <A, B, C, D> Tuple4<A, B, C, D> tuple(
-        Node<A> a,
-        Node<B> b,
-        Node<C> c,
-        Node<D> d
+        PlainNode<A> a,
+        PlainNode<B> b,
+        PlainNode<C> c,
+        PlainNode<D> d
     ) {
         return new Tuple4<>(a, b, c, d);
     }

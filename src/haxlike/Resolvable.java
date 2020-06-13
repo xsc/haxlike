@@ -1,13 +1,22 @@
 package haxlike;
 
 import fj.data.List;
+import haxlike.resolvers.Results;
 
 /**
- *
  * Class representing an unresolved value.
  * @param <T> class of values contained in the result node
  */
 public interface Resolvable<T> extends Node<T> {
+    /**
+     * Return resolvable key, a value that is used to group resolvables that can
+     * be resolved by the same resolver.
+     * @return resolvable key string.
+     */
+    default String getResolvableKey() {
+        return this.getClass().getName();
+    }
+
     @Override
     default boolean isResolved() {
         return false;
@@ -26,7 +35,12 @@ public interface Resolvable<T> extends Node<T> {
     }
 
     @Override
-    default Node<T> injectValues(Results results) {
-        return results.get(this).map(Nodes::value).orSome(() -> this);
+    @SuppressWarnings("unchecked")
+    default Node<T> injectValues(Results<Resolvable<?>, ?> results) {
+        return results
+            .get(this)
+            .map(v -> (T) v)
+            .map(Nodes::value)
+            .orSome(() -> this);
     }
 }

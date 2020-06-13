@@ -5,12 +5,13 @@ import fj.data.HashSet;
 import fj.data.List;
 import haxlike.Engine;
 import haxlike.EngineCache;
-import haxlike.Node;
-import haxlike.Operation;
+import haxlike.PlainNode;
 import haxlike.ResolutionStrategy;
 import haxlike.Resolvable;
-import haxlike.Results;
 import haxlike.SelectionStrategy;
+import haxlike.resolvers.Operation;
+import haxlike.resolvers.ResolverDefinition;
+import haxlike.resolvers.Results;
 import java.util.Optional;
 import lombok.Builder;
 import lombok.Value;
@@ -27,8 +28,8 @@ class EngineImpl<E> implements Engine {
     int maxIterationCount;
 
     @Override
-    public <T> T resolve(Node<T> node, EngineCache cache) {
-        Node<T> n = node;
+    public <T> T resolve(PlainNode<T> node, EngineCache cache) {
+        PlainNode<T> n = node;
         int iterationCount = 1;
         while (!n.isResolved()) {
             verifyMaxDepth(iterationCount);
@@ -56,7 +57,7 @@ class EngineImpl<E> implements Engine {
      * @param node node to resolve
      * @return a node with elements resolved
      */
-    private <T> Node<T> resolveNext(Node<T> node, EngineCache cache) {
+    private <T> PlainNode<T> resolveNext(PlainNode<T> node, EngineCache cache) {
         return Optional
             .of(node)
             .map(this::uniqueResolvables)
@@ -74,14 +75,16 @@ class EngineImpl<E> implements Engine {
 
     @SuppressWarnings("unchecked")
     private <T, V, R extends Resolvable<V>> List<R> uniqueResolvables(
-        Node<T> node
+        PlainNode<T> node
     ) {
         final HashSet<R> s = HashSet.empty();
         node.getResolvables().forEach(r -> s.set((R) r));
         return s.toList();
     }
 
-    private Results runOperations(List<Operation> operations) {
+    private <R, V> Results<R, V> runOperations(
+        List<Operation<R, V>> operations
+    ) {
         return ResultsImpl.from(resolutionStrategy.run(operations));
     }
 
@@ -89,30 +92,32 @@ class EngineImpl<E> implements Engine {
         List<R> resolvables
     ) {
         final List<List<R>> allBatches = resolvables
-            .groupBy(r -> r.getClass().getName(), Ord.stringOrd)
+            .groupBy(r -> r.getResolvableKey(), Ord.stringOrd)
             .values();
         return selectionStrategy.select(allBatches);
     }
 
-    private <V, R extends Resolvable<V>> List<Operation> createAllOperations(
+    private <V, R extends Resolvable<V>> List<Operation<R, V>> createAllOperations(
         List<List<R>> batches
     ) {
         return batches.bind(this::createOperations);
     }
 
-    @SuppressWarnings("unchecked")
-    private <V, R extends Resolvable<V>> List<Operation> createOperations(
+    private <V, R extends Resolvable<V>> List<Operation<R, V>> createOperations(
         List<R> batch
     ) {
-        final Class<R> cls = (Class<R>) batch.index(0).getClass();
-        final EngineResolver<E, V, R> resolver = registry.getResolverOrThrow(
-            cls
+        final ResolverDefinition<E, R, V> resolver = registry.getResolverOrThrow(
+            batch.head()
         );
         return resolver.createOperations(environment, batch);
     }
 
-    private <T> Node<T> injectResults(Node<T> node, Results results) {
-        return node.injectValues(results);
+    @SuppressWarnings("unchecked")
+    private <T, R extends Resolvable<V>, V> PlainNode<T> injectResults(
+        PlainNode<T> node,
+        Results<R, V> results
+    ) {
+        return node.injectValues((Results<Resolvable<?>, ?>) results);
     }
 
     // --- Logging

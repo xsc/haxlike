@@ -1,6 +1,8 @@
 package haxlike;
 
 import fj.data.List;
+import haxlike.resolvers.Operation;
+import haxlike.resolvers.Results;
 
 /**
  * A resolution strategy can run a series operations and return a list
@@ -8,5 +10,5 @@ import fj.data.List;
  * resolution.
  */
 public interface ResolutionStrategy {
-    List<Results> run(List<Operation> operations);
+    <R, V> List<Results<R, V>> run(List<Operation<R, V>> operations);
 }

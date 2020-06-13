@@ -6,9 +6,10 @@ import fj.F2;
 import fj.P2;
 import fj.data.List;
 import haxlike.Node;
+import haxlike.PlainNode;
 import haxlike.Resolvable;
-import haxlike.Results;
 import haxlike.nodes.ValueNode;
+import haxlike.resolvers.Results;
 import lombok.AccessLevel;
 import lombok.ToString;
 import lombok.experimental.FieldDefaults;
@@ -16,12 +17,12 @@ import lombok.experimental.FieldDefaults;
 @ToString
 @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
 public final class Tuple2<A, B> implements Node<P2<A, B>> {
-    Node<A> a;
-    Node<B> b;
+    PlainNode<A> a;
+    PlainNode<B> b;
     boolean resolved;
     List<Resolvable<?>> resolvables;
 
-    public Tuple2(Node<A> a, Node<B> b) {
+    public Tuple2(PlainNode<A> a, PlainNode<B> b) {
         this.a = a;
         this.b = b;
         this.resolved = a.isResolved() && b.isResolved();
@@ -44,7 +45,7 @@ public final class Tuple2<A, B> implements Node<P2<A, B>> {
     }
 
     @Override
-    public Node<P2<A, B>> injectValues(Results results) {
+    public Node<P2<A, B>> injectValues(Results<Resolvable<?>, ?> results) {
         return ValueNode.ifResolved(
             new Tuple2<>(a.injectValues(results), b.injectValues(results))
         );
@@ -54,7 +55,7 @@ public final class Tuple2<A, B> implements Node<P2<A, B>> {
         return this.map(p -> f.f(p._1(), p._2()));
     }
 
-    public <R> Node<R> flatMap(F2<A, B, Node<R>> f) {
+    public <R> Node<R> flatMap(F2<A, B, PlainNode<R>> f) {
         return this.flatMap(p -> f.f(p._1(), p._2()));
     }
 }

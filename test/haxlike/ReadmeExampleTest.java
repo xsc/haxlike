@@ -3,6 +3,7 @@ package haxlike;
 import static org.assertj.core.api.Assertions.*;
 
 import fj.data.List;
+import haxlike.traits.ListResolvable;
 import lombok.Value;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;

@@ -1,10 +1,12 @@
-package haxlike;
+package haxlike.projections;
 
 import fj.data.List;
-import haxlike.projections.IdentityProjection;
-import haxlike.projections.InspectProjection;
-import haxlike.projections.ListProjection;
-import haxlike.projections.SelectProjection;
+import haxlike.Node;
+import haxlike.projections.impl.IdentityProjection;
+import haxlike.projections.impl.InspectProjection;
+import haxlike.projections.impl.ListProjection;
+import haxlike.projections.impl.SelectProjection;
+import haxlike.relations.Relation;
 
 /**
  * Interface for tree projections. These can perform arbitrary transformations
@@ -36,8 +38,8 @@ public interface Projection<T> {
      * @param projection projection to apply to the relation value
      * @return a projection that will attach the given relation to the projected node
      */
-    default <V, R extends Resolvable<V>> Projection<T> andSelect(
-        Relation<T, V, R> relation,
+    default <V> Projection<T> andSelect(
+        Relation<T, V> relation,
         Projection<V> projection
     ) {
         return this.and(select(relation, projection));
@@ -50,9 +52,7 @@ public interface Projection<T> {
      * @param relation relation to add to the projection
      * @return a projection that will attach the given relation to the projected node
      */
-    default <V, R extends Resolvable<V>> Projection<T> andSelect(
-        Relation<T, V, R> relation
-    ) {
+    default <V> Projection<T> andSelect(Relation<T, V> relation) {
         return this.and(select(relation));
     }
 
@@ -66,8 +66,8 @@ public interface Projection<T> {
      * @param projection projection to apply to each element of the relation's result
      * @return a projection that will attach the given relation to every element of the relation's result
      */
-    default <V, R extends Resolvable<List<V>>> Projection<T> andSelectList(
-        Relation<T, List<V>, R> relation,
+    default <V> Projection<T> andSelectList(
+        Relation<T, List<V>> relation,
         Projection<V> projection
     ) {
         return this.and(selectList(relation, projection));
@@ -104,8 +104,8 @@ public interface Projection<T> {
      * @param projection projection to apply to the relation value
      * @return a projection that will attach the given relation to the projected node
      */
-    static <T, V, R extends Resolvable<V>> AndProjection<T> select(
-        Relation<T, V, R> relation,
+    static <T, V> AndProjection<T> select(
+        Relation<T, V> relation,
         Projection<V> projection
     ) {
         return p -> new SelectProjection<>(p, relation, projection);
@@ -118,9 +118,7 @@ public interface Projection<T> {
      * @param relation relation to add to the projection
      * @return a projection that will attach the given relation to the projected node
      */
-    static <T, V, R extends Resolvable<V>> AndProjection<T> select(
-        Relation<T, V, R> relation
-    ) {
+    static <T, V> AndProjection<T> select(Relation<T, V> relation) {
         return p ->
             new SelectProjection<>(p, relation, new IdentityProjection<>());
     }
@@ -135,8 +133,8 @@ public interface Projection<T> {
      * @param projection projection to apply to each element of the relation's result
      * @return a projection that will attach the given relation to every element of the relation's result
      */
-    static <T, V, R extends Resolvable<List<V>>> AndProjection<T> selectList(
-        Relation<T, List<V>, R> relation,
+    static <T, V> AndProjection<T> selectList(
+        Relation<T, List<V>> relation,
         Projection<V> projection
     ) {
         return select(relation, new ListProjection<>(projection));

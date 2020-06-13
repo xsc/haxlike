@@ -1,5 +1,7 @@
 package haxlike;
 
+import haxlike.resolvers.ResolverDefinition;
+import haxlike.resolvers.ResolverFunction;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ForkJoinPool;
 
@@ -12,81 +14,14 @@ import java.util.concurrent.ForkJoinPool;
  */
 public interface EngineBuilder<E> {
     /**
-     * Register a new resolver (batched)
+     * Register a new resolver definition
      * @param <V> value class
      * @param <R> resolvable class producing the value
-     * @param cls resolvable class to register
-     * @param resolver resolver to register
-     * @return a new EngineBuilder that has the resolver registered
+     * @param resolver resolver definition to register
+     * @return a new EngineBuilder that has the resolver definition registered
      */
     <V, R extends Resolvable<V>> EngineBuilder<E> withResolver(
-        Class<R> cls,
-        Resolver.Batched<? super E, V, R> resolver
-    );
-
-    /**
-     * Register a new resolver (batched)
-     * @param <V> value class
-     * @param <R> resolvable class producing the value
-     * @param cls resolvable class to register
-     * @param resolver resolver to register
-     * @return a new EngineBuilder that has the resolver registered
-     */
-    <V, R extends Resolvable<V>> EngineBuilder<E> withResolver(
-        Class<R> cls,
-        Resolver.BatchedNoEnv<V, R> resolver
-    );
-
-    /**
-     * Register a new resolver (batched, returning a list of in-order results)
-     * @param <V> value class
-     * @param <R> resolvable class producing the value
-     * @param cls resolvable class to register
-     * @param resolver resolver to register
-     * @return a new EngineBuilder that has the resolver registered
-     */
-    <V, R extends Resolvable<V>> EngineBuilder<E> withResolver(
-        Class<R> cls,
-        Resolver.BatchedInOrder<? super E, V, R> resolver
-    );
-
-    /**
-     * Register a new resolver (single)
-     * @param <V> value class
-     * @param <R> resolvable class producing the value
-     * @param cls resolvable class to register
-     * @param resolver resolver to register
-     * @return a new EngineBuilder that has the resolver registered
-     */
-    <V, R extends Resolvable<V>> EngineBuilder<E> withResolver(
-        Class<R> cls,
-        Resolver.BatchedInOrderNoEnv<V, R> resolver
-    );
-
-    /**
-     * Register a new resolver (single)
-     * @param <V> value class
-     * @param <R> resolvable class producing the value
-     * @param cls resolvable class to register
-     * @param resolver resolver to register
-     * @return a new EngineBuilder that has the resolver registered
-     */
-    <V, R extends Resolvable<V>> EngineBuilder<E> withResolver(
-        Class<R> cls,
-        Resolver.Single<? super E, V, R> resolver
-    );
-
-    /**
-     * Register a new resolver (single)
-     * @param <V> value class
-     * @param <R> resolvable class producing the value
-     * @param cls resolvable class to register
-     * @param resolver resolver to register
-     * @return a new EngineBuilder that has the resolver registered
-     */
-    <V, R extends Resolvable<V>> EngineBuilder<E> withResolver(
-        Class<R> cls,
-        Resolver.SingleNoEnv<V, R> resolver
+        ResolverDefinition<? super E, R, V> resolver
     );
 
     /**
@@ -141,5 +76,112 @@ public interface EngineBuilder<E> {
      */
     default EngineBuilder<E> withCommonForkJoinPool() {
         return withExecutorService(ForkJoinPool.commonPool());
+    }
+
+    /**
+     * Register a new resolver function
+     * @param <V> value class
+     * @param <R> resolvable class producing the value
+     * @param cls resolvable class to register
+     * @param resolver resolver function to register
+     * @return a new EngineBuilder that has the resolver functino registered
+     */
+    default <V, R extends Resolvable<V>> EngineBuilder<E> withResolverFunction(
+        Class<R> cls,
+        ResolverFunction<? super E, R, V> resolver
+    ) {
+        return this.withResolver(
+                ResolverFunction.toResolverDefinition(cls, resolver)
+            );
+    }
+
+    /**
+     * Register a new resolver (batched)
+     * @param <V> value class
+     * @param <R> resolvable class producing the value
+     * @param cls resolvable class to register
+     * @param resolver resolver to register
+     * @return a new EngineBuilder that has the resolver registered
+     */
+    default <V, R extends Resolvable<V>> EngineBuilder<E> withResolver(
+        Class<R> cls,
+        ResolverFunction.Batched<? super E, R, V> resolver
+    ) {
+        return this.withResolverFunction(cls, resolver);
+    }
+
+    /**
+     * Register a new resolver (batched)
+     * @param <V> value class
+     * @param <R> resolvable class producing the value
+     * @param cls resolvable class to register
+     * @param resolver resolver to register
+     * @return a new EngineBuilder that has the resolver registered
+     */
+    default <V, R extends Resolvable<V>> EngineBuilder<E> withResolver(
+        Class<R> cls,
+        ResolverFunction.BatchedNoEnv<R, V> resolver
+    ) {
+        return this.withResolverFunction(cls, resolver);
+    }
+
+    /**
+     * Register a new resolver (batched, returning a list of in-order results)
+     * @param <V> value class
+     * @param <R> resolvable class producing the value
+     * @param cls resolvable class to register
+     * @param resolver resolver to register
+     * @return a new EngineBuilder that has the resolver registered
+     */
+    default <V, R extends Resolvable<V>> EngineBuilder<E> withResolver(
+        Class<R> cls,
+        ResolverFunction.BatchedInOrder<? super E, R, V> resolver
+    ) {
+        return this.withResolverFunction(cls, resolver);
+    }
+
+    /**
+     * Register a new resolver (single)
+     * @param <V> value class
+     * @param <R> resolvable class producing the value
+     * @param cls resolvable class to register
+     * @param resolver resolver to register
+     * @return a new EngineBuilder that has the resolver registered
+     */
+    default <V, R extends Resolvable<V>> EngineBuilder<E> withResolver(
+        Class<R> cls,
+        ResolverFunction.BatchedInOrderNoEnv<R, V> resolver
+    ) {
+        return this.withResolverFunction(cls, resolver);
+    }
+
+    /**
+     * Register a new resolver (single)
+     * @param <V> value class
+     * @param <R> resolvable class producing the value
+     * @param cls resolvable class to register
+     * @param resolver resolver to register
+     * @return a new EngineBuilder that has the resolver registered
+     */
+    default <V, R extends Resolvable<V>> EngineBuilder<E> withResolver(
+        Class<R> cls,
+        ResolverFunction.Single<? super E, R, V> resolver
+    ) {
+        return this.withResolverFunction(cls, resolver);
+    }
+
+    /**
+     * Register a new resolver (single)
+     * @param <V> value class
+     * @param <R> resolvable class producing the value
+     * @param cls resolvable class to register
+     * @param resolver resolver to register
+     * @return a new EngineBuilder that has the resolver registered
+     */
+    default <V, R extends Resolvable<V>> EngineBuilder<E> withResolver(
+        Class<R> cls,
+        ResolverFunction.SingleNoEnv<R, V> resolver
+    ) {
+        return this.withResolverFunction(cls, resolver);
     }
 }

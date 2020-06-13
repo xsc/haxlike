@@ -1,6 +1,7 @@
 package haxlike;
 
 import fj.data.List;
+import haxlike.resolvers.Results;
 
 @SuppressWarnings("squid:S1452")
 public interface EngineCache {
@@ -17,5 +18,7 @@ public interface EngineCache {
      * @param results newly calculated resolution results
      * @return the full internal cache.
      */
-    Results updateAndGet(Results results);
+    <R extends Resolvable<V>, V> Results<R, V> updateAndGet(
+        Results<R, V> results
+    );
 }

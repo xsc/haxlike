@@ -1,7 +1,7 @@
-package haxlike.projections;
+package haxlike.projections.impl;
 
 import haxlike.Node;
-import haxlike.Projection;
+import haxlike.projections.Projection;
 
 /**
  * Base projection that will not alter the node but can be used as

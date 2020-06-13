@@ -3,6 +3,7 @@ package haxlike.impl;
 import fj.Ord;
 import fj.data.TreeMap;
 import haxlike.Resolvable;
+import haxlike.resolvers.ResolverDefinition;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.With;
@@ -11,30 +12,31 @@ import lombok.With;
 @With(AccessLevel.PRIVATE)
 final class EngineRegistry<E> {
     // --- Data
-    private final TreeMap<String, EngineResolver<? super E, ?, ?>> resolvers;
+    private final TreeMap<String, ResolverDefinition<? super E, ?, ?>> resolvers;
 
     public EngineRegistry() {
         this(TreeMap.empty(Ord.stringOrd));
     }
 
     // --- Resolvers
-    public <V, R extends Resolvable<V>> EngineRegistry<E> registerResolver(
-        Class<R> cls,
-        EngineResolver<? super E, V, R> resolver
+    public <R extends Resolvable<V>, V> EngineRegistry<E> registerResolver(
+        ResolverDefinition<? super E, R, V> resolver
     ) {
-        return this.withResolvers(resolvers.set(cls.getName(), resolver));
+        return this.withResolvers(
+                resolvers.set(resolver.getResolvableKey(), resolver)
+            );
     }
 
     @SuppressWarnings("unchecked")
-    public <V, R extends Resolvable<V>> EngineResolver<E, V, R> getResolverOrThrow(
-        Class<R> cls
+    public <R extends Resolvable<V>, V> ResolverDefinition<E, R, V> getResolverOrThrow(
+        R proto
     ) {
-        return (EngineResolver<E, V, R>) resolvers
-            .get(cls.getName())
+        return (ResolverDefinition<E, R, V>) resolvers
+            .get(proto.getResolvableKey())
             .orSome(
                 () -> {
                     throw new IllegalStateException(
-                        "No resolver for class: " + cls.getName()
+                        "No resolver for key: " + proto.getResolvableKey()
                     );
                 }
             );

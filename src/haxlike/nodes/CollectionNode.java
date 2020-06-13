@@ -2,27 +2,28 @@ package haxlike.nodes;
 
 import fj.data.List;
 import haxlike.Node;
+import haxlike.PlainNode;
 import haxlike.Resolvable;
-import haxlike.Results;
+import haxlike.resolvers.Results;
 import lombok.Value;
 
 @Value
 public class CollectionNode<T> implements Node<List<T>> {
-    List<Node<T>> childNodes;
+    List<? extends PlainNode<T>> childNodes;
     boolean resolved;
 
-    public CollectionNode(List<Node<T>> childNodes) {
+    public CollectionNode(List<? extends PlainNode<T>> childNodes) {
         this.childNodes = childNodes;
-        this.resolved = childNodes.forall(Node::isResolved);
+        this.resolved = childNodes.forall(PlainNode::isResolved);
     }
 
     @Override
     public List<Resolvable<?>> getResolvables() {
-        return childNodes.bind(Node::getResolvables);
+        return childNodes.bind(PlainNode::getResolvables);
     }
 
     @Override
-    public Node<List<T>> injectValues(Results results) {
+    public PlainNode<List<T>> injectValues(Results<Resolvable<?>, ?> results) {
         final CollectionNode<T> newNode = new CollectionNode<>(
             childNodes.map(node -> node.injectValues(results))
         );
@@ -32,6 +33,6 @@ public class CollectionNode<T> implements Node<List<T>> {
 
     @Override
     public List<T> getValue() {
-        return childNodes.map(Node::getValue);
+        return childNodes.map(PlainNode::getValue);
     }
 }

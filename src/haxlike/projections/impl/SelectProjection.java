@@ -1,10 +1,9 @@
-package haxlike.projections;
+package haxlike.projections.impl;
 
 import haxlike.Node;
 import haxlike.Nodes;
-import haxlike.Projection;
-import haxlike.Relation;
-import haxlike.Resolvable;
+import haxlike.projections.Projection;
+import haxlike.relations.Relation;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -16,13 +15,12 @@ import lombok.Value;
  * @param <R> relation value class
  */
 @Value
-public class SelectProjection<T, V, R extends Resolvable<V>>
-    implements Projection<T> {
+public class SelectProjection<T, V> implements Projection<T> {
     @NonNull
     Projection<T> base;
 
     @NonNull
-    Relation<T, V, R> relation;
+    Relation<T, V> relation;
 
     @NonNull
     Projection<V> projection;

@@ -6,9 +6,10 @@ import fj.F4;
 import fj.P4;
 import fj.data.List;
 import haxlike.Node;
+import haxlike.PlainNode;
 import haxlike.Resolvable;
-import haxlike.Results;
 import haxlike.nodes.ValueNode;
+import haxlike.resolvers.Results;
 import lombok.AccessLevel;
 import lombok.ToString;
 import lombok.experimental.FieldDefaults;
@@ -16,18 +17,18 @@ import lombok.experimental.FieldDefaults;
 @ToString
 @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
 public final class Tuple4<A, B, C, D> implements Node<P4<A, B, C, D>> {
-    Node<A> a;
-    Node<B> b;
-    Node<C> c;
-    Node<D> d;
+    PlainNode<A> a;
+    PlainNode<B> b;
+    PlainNode<C> c;
+    PlainNode<D> d;
     boolean resolved;
     List<Resolvable<?>> resolvables;
 
     public Tuple4(
-        final Node<A> a,
-        final Node<B> b,
-        final Node<C> c,
-        final Node<D> d
+        final PlainNode<A> a,
+        final PlainNode<B> b,
+        final PlainNode<C> c,
+        final PlainNode<D> d
     ) {
         this.a = a;
         this.b = b;
@@ -61,7 +62,9 @@ public final class Tuple4<A, B, C, D> implements Node<P4<A, B, C, D>> {
     }
 
     @Override
-    public Node<P4<A, B, C, D>> injectValues(Results results) {
+    public PlainNode<P4<A, B, C, D>> injectValues(
+        Results<Resolvable<?>, ?> results
+    ) {
         return ValueNode.ifResolved(
             new Tuple4<>(
                 a.injectValues(results),
@@ -76,7 +79,7 @@ public final class Tuple4<A, B, C, D> implements Node<P4<A, B, C, D>> {
         return this.map(p -> f.f(p._1(), p._2(), p._3(), p._4()));
     }
 
-    public <R> Node<R> flatMap(F4<A, B, C, D, Node<R>> f) {
+    public <R> Node<R> flatMap(F4<A, B, C, D, PlainNode<R>> f) {
         return this.flatMap(p -> f.f(p._1(), p._2(), p._3(), p._4()));
     }
 }
