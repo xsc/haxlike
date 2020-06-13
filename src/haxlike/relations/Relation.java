@@ -51,15 +51,15 @@ public interface Relation<T, V> {
      * @param nodeFunction node creation function
      * @return the desired relation
      */
-    static <T, P, V> ParameterRelation<T, P, V> declare(
+    static <T, P, V> ParameterRelation<T, P, V> declareWithParameters(
         F2<T, V, T> attachFunction,
-        F2<T, P, Node<V>> nodeFunction,
-        P defaultParameters
+        F<P, Node<V>> nodeFunction,
+        F<T, P> parameterFunction
     ) {
         return new ParameterRelationImpl<>(
             attachFunction,
             nodeFunction,
-            defaultParameters
+            parameterFunction
         );
     }
 }

@@ -11,23 +11,26 @@ import lombok.Value;
 public class ParameterRelationImpl<T, P, V>
     implements ParameterRelation<T, P, V> {
     F2<T, V, T> attachFunction;
-    F2<T, P, Node<V>> parameterizedNodeFunction;
-    P parameters;
+    F<P, Node<V>> nodeFunction;
+    F<T, P> parameterFunction;
 
     @Override
     public F<T, Node<V>> getNodeFunction() {
-        return value -> parameterizedNodeFunction.f(value, parameters);
+        return value -> nodeFunction.f(parameterFunction.f(value));
     }
 
     @Override
     public <N> ParameterRelation<T, P, V> with(
         Parameter<P, N> parameter,
-        N value
+        N parameterValue
     ) {
         return new ParameterRelationImpl<>(
             attachFunction,
-            parameterizedNodeFunction,
-            parameter.attach(parameters, value)
+            nodeFunction,
+            value -> {
+                final P parameters = parameterFunction.f(value);
+                return parameter.attach(parameters, parameterValue);
+            }
         );
     }
 }

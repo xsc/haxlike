@@ -7,7 +7,6 @@ import haxlike.Node;
 import haxlike.relations.ParameterRelation;
 import haxlike.relations.Relation;
 import haxlike.resolvers.impl.AbstractResolverImpl;
-import java.util.Optional;
 import lombok.NonNull;
 
 /**
@@ -41,7 +40,7 @@ public class Resolver<E, P, V> extends AbstractResolverImpl<E, P, V> {
      * @param batch batch to resolve
      * @return in-order result of the resolution
      */
-    public final List<V> resolveAll(E env, List<P> batch) {
+    public final List<V> resolveAll(E env, @NonNull List<P> batch) {
         return super.run(env, batch);
     }
 
@@ -51,64 +50,33 @@ public class Resolver<E, P, V> extends AbstractResolverImpl<E, P, V> {
      * @param value value to resolve
      * @return resolution result
      */
-    public final V resolve(E env, P value) {
+    public final V resolve(E env, @NonNull P value) {
         return resolveAll(env, List.single(value)).head();
     }
 
     /**
-     * Declare a relation that can be fulfilled by this resolver. Typically, this would look like
-     * the following:
+     * Declare a (parameterisable) relation that can be fulfilled by this resolver.
      *
      * <pre>
-     * User.relation(Post::withAuthor, Post::getAuthorId)
+     * User.relation(Post::withAuthor, Post::getAuthorId);
      * </pre>
-     * @param <T> container class
-     * @param attachFunction function to be used to attach the result to the container
-     * @param paramFunction function that creates the resolver parameters
-     * @return a relation representing this resolver's result
-     */
-    public <T> Relation<T, V> relation(
-        F2<T, V, T> attachFunction,
-        F<T, P> paramFunction
-    ) {
-        return Relation.declare(
-            attachFunction,
-            value -> fetch(paramFunction.f(value))
-        );
-    }
-
-    /**
-     * Declare a relation that can be fulfilled by this resolver, allowing parameters to be passed.
      *
-     * <pre>
-     * Posts.relation(
-     *   User::withPosts,
-     *   user -> new Params(user.getId()),
-     *   Params::withLimit
-     * );
-     * </pre>
+     * It is highly recommended to use {@link lombok.Value} and {@link lombok.With} on
+     * entities containing relations.
      *
      * @param <T> type to attach this relation to
      * @param attachFunction function to be used to attach
-     * @param paramFunction function that creates the resolver parameters
+     * @param paramFunction function that creates the parameter passed to {@link Resolver#fetch(Object)}
      * @return a relation representing this resolver's result
      */
-    public <T, R> ParameterRelation<T, R, V> relation(
+    public <T> ParameterRelation<T, P, V> relation(
         F2<T, V, T> attachFunction,
-        F<T, P> paramFunction,
-        F2<P, R, P> adaptFunction
+        F<T, P> paramFunction
     ) {
-        return Relation.declare(
+        return Relation.declareWithParameters(
             attachFunction,
-            (value, additionalParams) -> {
-                final P initialParams = paramFunction.f(value);
-                final P fullParams = Optional
-                    .ofNullable(additionalParams)
-                    .map(values -> adaptFunction.f(initialParams, values))
-                    .orElse(initialParams);
-                return fetch(fullParams);
-            },
-            null
+            this::fetch,
+            paramFunction
         );
     }
 
