@@ -23,19 +23,6 @@ dependencies {
   testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
 }
 
-sourceSets {
-  main {
-    java {
-      srcDirs = ['src']
-    }
-  }
-  test {
-    java {
-      srcDirs = ['test']
-    }
-  }
-}
-
 test {
   useJUnitPlatform {
     includeEngines "junit-jupiter"
