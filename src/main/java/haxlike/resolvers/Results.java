@@ -64,4 +64,21 @@ public interface Results<R, V> {
     ) {
         return Results.match(resolvables, fr, results, fv, null);
     }
+
+    public static <V, I> Results<I, V> match(
+        List<I> references,
+        List<V> results,
+        F<V, I> fv
+    ) {
+        return Results.match(references, r -> r, results, fv, null);
+    }
+
+    public static <V, I> Results<I, V> match(
+        List<I> references,
+        List<V> results,
+        F<V, I> fv,
+        V defaultValue
+    ) {
+        return Results.match(references, r -> r, results, fv, defaultValue);
+    }
 }
