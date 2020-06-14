@@ -17,53 +17,93 @@ Adding these often comes at significant cost, either in pure time spent on
 implementation, code readability or verbosity. [haxl][] and its companions allow
 you to get rid of that overhead.
 
-An alternative to the [haxl][] approach is the one employed by [dataloader][], which
-is a good fit if you prefer a more imperative look and feel over a functional one.
+An alternative to the approach employed by this library is the one inherent to
+[dataloader][], which is a good fit if you prefer a more imperative look and
+feel over a functional one.
 
 [dataloader]: https://github.com/graphql/dataloader
 
-## Declarative Data Fetching
-
-To understand what haxlike does, consider the following code:
+## Quickstart
 
 ```java
-var users = fetchUsers()
-    .traverse(user -> {
-        var posts = fetchPosts(user.getId());
-        return new UserWithPosts(user, posts);
-    });
+import haxlike.*;
+import haxlike.resolvers.*;
 ```
 
-This is a naïve implementation of attaching a one-to-many relation (posts) to
-an entity (users). If these were imperative calls, you'd perform one query to get all
-users, then one additonal query for _each and every_ user to get their posts. This
-is the so-called _N+1 query problem_ and can get you in terrible trouble.
+### Engine
 
-With haxlike you can basically write the above piece of code in good conscience:
+To allow for data fetching operations you need to create a so-called _engine_ that
+encapsulates all resolution logic. It allows you to customise a series of things:
+
+- **Environment**: What dependencies are available to me?
+- **Resolvers**: How do I fetch a specific set of entities?
+- **Resolution strategies**: How do I parallelise multiple data fetching operations?
+- **Selection strategies**: What entities do I resolve next?
+
+The default strategy is to sequentially resolve everything as soon as it's available.
 
 ```java
-var users = fetchUsers()
-    .flatMapEach(user -> {
-        var posts = fetchPosts(user.getId());
-        return posts.map(values -> new UserWithPosts(user, values));
-    });
-engine.resolve(users);
+// 1. Declare Resolver
+var User = Resolver.declare("User", (Env env, List<Integer> userIds) -> {
+    var results = env.getDatabase().fetchUsers(userIds);
+    return Results.match(userIds, results, UserDto::getId);
+});
+
+// 2. Create Engine
+var engine = Engine.<Env>builder()
+    .withResolver(User)
+    .withCommonForkJoinPool()
+    .build(new Env(database));
 ```
 
-You need one more line to actually trigger the data fetching but behind the scenes
-the engine will take care of:
+### Nodes
 
-On top of that, haxlike provides a functional style based on immutable data
-structures, with useful traversal and manipulation functions for the most
-common use cases. For example, the above could also have been written as:
+Declarative data fetching allows you to build up a tree of transformations (inner nodes)
+and data fetching operations (leaves). The engine will then analyse that tree and use
+its resolution and selection strategies to decide on the next step.
+
+There are three types of nodes: value nodes, list nodes and tuples:
 
 ```java
-var users = fetchUsers()
-    .attachEach(
-        UserWithPosts::new,
-        user -> fetchPosts(user.getId())
-    );
+var firstUser  = User.fetch(1);
+var secondUser = User.fetch(2);
+var users      = Nodes.list(firstUser, secondUser);
+var userTuple  = Nodes.tuple(firstUser, secondUser);
 ```
+
+They differ in the transformation functions they offer. List nodes, for example, allow
+you to apply a function to each element, and tuple nodes provide a multi-parameter
+transformation. Let's concatenate the user names of two users, to illustrate:
+
+```java
+var usernames = Nodes.tuple(firstUser, secondUser)
+    .map((a, b) -> a.getUserName() + ", " + b.getUsername());
+```
+
+Note that no data fetching has occured yet - you're only just building up the tree.
+
+### Resolution
+
+Once you have created your node, you can pass it to the engine:
+
+```java
+var userDto = engine.resolve(firstUser);
+```
+
+And you can be sure that even complex data fetching will now be performed efficiently,
+no matter how naive you tackle the implementation:
+
+```java
+var usersWithPosts = AllUsers.fetch()
+    .flatMapEach(user ->
+        UserPosts
+            .fetch(user.getId())
+            .map(posts -> new UserWithPosts(user, posts)));
+engine.resolve(usersWithPosts);
+```
+
+But this is just the beginning - haxlike offers some powerful abstractions that will
+make your code even more declarative.
 
 ## License
 
