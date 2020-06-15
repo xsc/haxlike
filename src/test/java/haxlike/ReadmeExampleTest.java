@@ -3,6 +3,7 @@ package haxlike;
 import static org.assertj.core.api.Assertions.*;
 
 import fj.data.List;
+import haxlike.resolvers.*;
 import haxlike.traits.ListResolvable;
 import lombok.Value;
 import org.junit.jupiter.api.AfterAll;
@@ -73,6 +74,28 @@ public class ReadmeExampleTest {
                 expectedUser(2),
                 expectedUser(3)
             );
+    }
+
+    @Test
+    void readmeExample_shouldResolveCorrectly_2() {
+        // 1. Create Resolver
+        var User = Resolver.declare(
+            "User",
+            (List<Integer> userIds) -> {
+                var results = userIds.map(User::new);
+                return Results.zip(userIds, results);
+            }
+        );
+
+        // 2. Create Engine
+        var engine = Engine.builder().withResolver(User).build(null);
+
+        // 3. Resolve users
+        var users = engine.resolve(Nodes.list(User.fetch(1), User.fetch(2)));
+
+        // 4. Verify
+        assertThat(users).hasSize(2);
+        assertThat(users).extracting("id").containsExactly(1, 2);
     }
 
     // --- Data
