@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.*;
 
 import fj.data.List;
 import haxlike.resolvers.*;
-import haxlike.traits.ListResolvable;
 import lombok.Value;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -117,7 +116,7 @@ public class ReadmeExampleTest {
 
     // --- Resolvables
     @Value(staticConstructor = "fetch")
-    public static class Users implements ListResolvable<User> {
+    public static class Users implements Resolvable.ListResolvable<User> {
 
         public static List<User> resolve(Users resolvable) {
             return List.range(0, 4).map(i -> new User(i));
@@ -125,7 +124,7 @@ public class ReadmeExampleTest {
     }
 
     @Value(staticConstructor = "fetch")
-    public static class PostsByUser implements ListResolvable<Post> {
+    public static class PostsByUser implements Resolvable.ListResolvable<Post> {
         int userId;
 
         public static List<List<Post>> resolve(List<PostsByUser> rs) {

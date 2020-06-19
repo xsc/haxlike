@@ -1,9 +1,9 @@
 package haxlike.resolvers;
 
 import fj.data.List;
+import haxlike.Resolvable;
 import haxlike.resolvers.impl.AbstractProvider;
 import haxlike.resolvers.impl.ResolvableValue;
-import haxlike.traits.ListResolvable;
 
 /**
  * Class for inline resolvers. This will allow you to declare resolution
@@ -54,7 +54,7 @@ public class ListProvider<E, V>
     // --- Resolvable
     public static class ToResolve<V>
         extends ResolvableValue<Object, List<V>>
-        implements ListResolvable<V> {
+        implements Resolvable.ListResolvable<V> {
 
         public ToResolve(String resolvableKey, Object ref) {
             super(resolvableKey, ref);

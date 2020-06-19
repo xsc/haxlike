@@ -2,7 +2,6 @@ package haxlike.nodes;
 
 import fj.data.List;
 import haxlike.Node;
-import haxlike.PlainNode;
 import haxlike.Resolvable;
 import haxlike.resolvers.Results;
 
@@ -12,9 +11,9 @@ import haxlike.resolvers.Results;
  * @param <T> value class of the underlying node.
  */
 public class NodeDecorator<T> implements Node<T> {
-    private final PlainNode<T> inner;
+    private final Node<T> inner;
 
-    public NodeDecorator(PlainNode<T> inner) {
+    public NodeDecorator(Node<T> inner) {
         this.inner = inner;
     }
 
@@ -34,7 +33,7 @@ public class NodeDecorator<T> implements Node<T> {
     }
 
     @Override
-    public PlainNode<T> injectValues(Results<Resolvable<?>, ?> results) {
+    public Node<T> injectValues(Results<Resolvable<?>, ?> results) {
         return inner.injectValues(results);
     }
 

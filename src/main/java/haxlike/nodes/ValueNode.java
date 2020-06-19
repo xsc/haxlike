@@ -2,7 +2,6 @@ package haxlike.nodes;
 
 import fj.data.List;
 import haxlike.Node;
-import haxlike.PlainNode;
 import haxlike.Resolvable;
 import haxlike.resolvers.Results;
 import lombok.Value;
@@ -22,7 +21,7 @@ public class ValueNode<T> implements Node<T> {
     }
 
     @Override
-    public PlainNode<T> injectValues(Results<Resolvable<?>, ?> results) {
+    public Node<T> injectValues(Results<Resolvable<?>, ?> results) {
         return this;
     }
 

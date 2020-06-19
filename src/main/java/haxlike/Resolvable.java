@@ -43,4 +43,14 @@ public interface Resolvable<T> extends Node<T> {
             .map(Nodes::value)
             .orSome(() -> this);
     }
+
+    /**
+     * Convenience trait, enriching a {@link Resolvable} returning a list with
+     * {@link ListNode} functionality, including {@link ListNode#mapEach},
+     * {@link ListNode#flatMapEach} and others.
+     *
+     * @param <T> list element class
+     */
+    public static interface ListResolvable<T>
+        extends Resolvable<List<T>>, Node.ListNode<T> {}
 }

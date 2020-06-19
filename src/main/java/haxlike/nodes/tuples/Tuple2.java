@@ -6,7 +6,6 @@ import fj.F2;
 import fj.P2;
 import fj.data.List;
 import haxlike.Node;
-import haxlike.PlainNode;
 import haxlike.Resolvable;
 import haxlike.nodes.ValueNode;
 import haxlike.resolvers.Results;
@@ -17,12 +16,12 @@ import lombok.experimental.FieldDefaults;
 @ToString
 @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
 public final class Tuple2<A, B> implements Node<P2<A, B>> {
-    PlainNode<A> a;
-    PlainNode<B> b;
+    Node<A> a;
+    Node<B> b;
     boolean resolved;
     List<Resolvable<?>> resolvables;
 
-    public Tuple2(PlainNode<A> a, PlainNode<B> b) {
+    public Tuple2(Node<A> a, Node<B> b) {
         this.a = a;
         this.b = b;
         this.resolved = a.isResolved() && b.isResolved();
@@ -55,7 +54,7 @@ public final class Tuple2<A, B> implements Node<P2<A, B>> {
         return this.map(p -> f.f(p._1(), p._2()));
     }
 
-    public <R> Node<R> flatMap(F2<A, B, PlainNode<R>> f) {
+    public <R> Node<R> flatMap(F2<A, B, Node<R>> f) {
         return this.flatMap(p -> f.f(p._1(), p._2()));
     }
 }

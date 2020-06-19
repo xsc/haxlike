@@ -6,7 +6,6 @@ import fj.F3;
 import fj.P3;
 import fj.data.List;
 import haxlike.Node;
-import haxlike.PlainNode;
 import haxlike.Resolvable;
 import haxlike.nodes.ValueNode;
 import haxlike.resolvers.Results;
@@ -17,17 +16,13 @@ import lombok.experimental.FieldDefaults;
 @ToString
 @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
 public final class Tuple3<A, B, C> implements Node<P3<A, B, C>> {
-    PlainNode<A> a;
-    PlainNode<B> b;
-    PlainNode<C> c;
+    Node<A> a;
+    Node<B> b;
+    Node<C> c;
     boolean resolved;
     List<Resolvable<?>> resolvables;
 
-    public Tuple3(
-        final PlainNode<A> a,
-        final PlainNode<B> b,
-        final PlainNode<C> c
-    ) {
+    public Tuple3(final Node<A> a, final Node<B> b, final Node<C> c) {
         this.a = a;
         this.b = b;
         this.c = c;
@@ -55,9 +50,7 @@ public final class Tuple3<A, B, C> implements Node<P3<A, B, C>> {
     }
 
     @Override
-    public PlainNode<P3<A, B, C>> injectValues(
-        Results<Resolvable<?>, ?> results
-    ) {
+    public Node<P3<A, B, C>> injectValues(Results<Resolvable<?>, ?> results) {
         return ValueNode.ifResolved(
             new Tuple3<>(
                 a.injectValues(results),
@@ -71,7 +64,7 @@ public final class Tuple3<A, B, C> implements Node<P3<A, B, C>> {
         return this.map(p -> f.f(p._1(), p._2(), p._3()));
     }
 
-    public <R> Node<R> flatMap(F3<A, B, C, PlainNode<R>> f) {
+    public <R> Node<R> flatMap(F3<A, B, C, Node<R>> f) {
         return this.flatMap(p -> f.f(p._1(), p._2(), p._3()));
     }
 }

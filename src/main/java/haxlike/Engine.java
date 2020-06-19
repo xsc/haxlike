@@ -1,12 +1,17 @@
 package haxlike;
 
 import haxlike.impl.EngineBuilderImpl;
+import haxlike.projections.Projection;
 
 public interface Engine {
-    <T> T resolve(PlainNode<T> node, EngineCache cache);
+    <T> T resolve(Node<T> node, EngineCache cache);
 
-    default <T> T resolve(PlainNode<T> node) {
+    default <T> T resolve(Node<T> node) {
         return resolve(node, EngineCaches.defaultCache());
+    }
+
+    default <T> T resolve(Node<T> node, Projection<T> projection) {
+        return resolve(projection.project(node));
     }
 
     /**

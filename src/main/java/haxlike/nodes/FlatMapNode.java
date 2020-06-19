@@ -3,7 +3,6 @@ package haxlike.nodes;
 import fj.F;
 import fj.data.List;
 import haxlike.Node;
-import haxlike.PlainNode;
 import haxlike.Resolvable;
 import haxlike.resolvers.Results;
 import java.util.concurrent.atomic.AtomicReference;
@@ -11,8 +10,8 @@ import lombok.Value;
 
 @Value
 public class FlatMapNode<T, R> implements Node<R> {
-    PlainNode<T> inner;
-    F<T, ? extends PlainNode<R>> f;
+    Node<T> inner;
+    F<T, ? extends Node<R>> f;
 
     @Override
     public List<Resolvable<?>> getResolvables() {
@@ -20,8 +19,8 @@ public class FlatMapNode<T, R> implements Node<R> {
     }
 
     @Override
-    public PlainNode<R> injectValues(Results<Resolvable<?>, ?> results) {
-        final PlainNode<T> result = inner.injectValues(results);
+    public Node<R> injectValues(Results<Resolvable<?>, ?> results) {
+        final Node<T> result = inner.injectValues(results);
         return result.isResolved()
             ? f.f(result.getValue())
             : new FlatMapNode<>(result, f);
@@ -41,13 +40,13 @@ public class FlatMapNode<T, R> implements Node<R> {
 
     @Value
     public static class Resolved<T, R> implements Node<R> {
-        PlainNode<T> inner;
-        F<T, ? extends PlainNode<R>> f;
+        Node<T> inner;
+        F<T, ? extends Node<R>> f;
 
         // --- Cache Value
-        private final AtomicReference<PlainNode<R>> resolvedNode = new AtomicReference<>();
+        private final AtomicReference<Node<R>> resolvedNode = new AtomicReference<>();
 
-        private PlainNode<R> resolved() {
+        private Node<R> resolved() {
             return resolvedNode.updateAndGet(
                 value -> value == null ? f.f(inner.getValue()) : value
             );
@@ -59,7 +58,7 @@ public class FlatMapNode<T, R> implements Node<R> {
         }
 
         @Override
-        public PlainNode<R> injectValues(Results<Resolvable<?>, ?> results) {
+        public Node<R> injectValues(Results<Resolvable<?>, ?> results) {
             return resolved().injectValues(results);
         }
 

@@ -3,14 +3,13 @@ package haxlike.nodes;
 import fj.F;
 import fj.data.List;
 import haxlike.Node;
-import haxlike.PlainNode;
 import haxlike.Resolvable;
 import haxlike.resolvers.Results;
 import lombok.Value;
 
 @Value
 public class MapNode<T, R> implements Node<R> {
-    PlainNode<T> inner;
+    Node<T> inner;
     F<T, R> f;
 
     @Override
@@ -19,7 +18,7 @@ public class MapNode<T, R> implements Node<R> {
     }
 
     @Override
-    public PlainNode<R> injectValues(Results<Resolvable<?>, ?> results) {
+    public Node<R> injectValues(Results<Resolvable<?>, ?> results) {
         return new MapNode<>(inner.injectValues(results), f);
     }
 

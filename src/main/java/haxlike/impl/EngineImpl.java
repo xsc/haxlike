@@ -5,7 +5,7 @@ import fj.data.HashSet;
 import fj.data.List;
 import haxlike.Engine;
 import haxlike.EngineCache;
-import haxlike.PlainNode;
+import haxlike.Node;
 import haxlike.ResolutionStrategy;
 import haxlike.Resolvable;
 import haxlike.SelectionStrategy;
@@ -28,8 +28,8 @@ class EngineImpl<E> implements Engine {
     int maxIterationCount;
 
     @Override
-    public <T> T resolve(PlainNode<T> node, EngineCache cache) {
-        PlainNode<T> n = node;
+    public <T> T resolve(Node<T> node, EngineCache cache) {
+        Node<T> n = node;
         int iterationCount = 1;
         while (!n.isResolved()) {
             verifyMaxDepth(iterationCount);
@@ -57,7 +57,7 @@ class EngineImpl<E> implements Engine {
      * @param node node to resolve
      * @return a node with elements resolved
      */
-    private <T> PlainNode<T> resolveNext(PlainNode<T> node, EngineCache cache) {
+    private <T> Node<T> resolveNext(Node<T> node, EngineCache cache) {
         return Optional
             .of(node)
             .map(this::uniqueResolvables)
@@ -75,7 +75,7 @@ class EngineImpl<E> implements Engine {
 
     @SuppressWarnings("unchecked")
     private <T, V, R extends Resolvable<V>> List<R> uniqueResolvables(
-        PlainNode<T> node
+        Node<T> node
     ) {
         final HashSet<R> s = HashSet.empty();
         node.getResolvables().forEach(r -> s.set((R) r));
@@ -113,8 +113,8 @@ class EngineImpl<E> implements Engine {
     }
 
     @SuppressWarnings("unchecked")
-    private <T, R extends Resolvable<V>, V> PlainNode<T> injectResults(
-        PlainNode<T> node,
+    private <T, R extends Resolvable<V>, V> Node<T> injectResults(
+        Node<T> node,
         Results<R, V> results
     ) {
         return node.injectValues((Results<Resolvable<?>, ?>) results);
