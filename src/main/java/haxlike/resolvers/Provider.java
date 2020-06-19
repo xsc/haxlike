@@ -36,4 +36,11 @@ public class Provider<E, V>
     ) {
         return declareProvider(providerName, f);
     }
+
+    public static <T> Provider<Object, T> declare(
+        String providerName,
+        ResolverFunction.ProviderNoEnv<T> f
+    ) {
+        return declareProvider(providerName, f);
+    }
 }

@@ -62,6 +62,30 @@ public interface ResolverFunction<E, R, V> {
      * @param <R> resolvable class
      */
     @FunctionalInterface
+    public static interface ProviderNoEnv<V>
+        extends ResolverFunction<Object, Object, V> {
+        V provide();
+
+        @Override
+        default OperationResolver<Object, Object, V> toOperationResolver() {
+            return (env, batch) ->
+                List.single(
+                    () -> {
+                        final V result = this.provide();
+                        return Results.map(batch, r -> result);
+                    }
+                );
+        }
+    }
+
+    /**
+     * A batched resolver is a function that will use a supplied environment
+     * to return a list of results based on a list of values-to-resolve.
+     * @param <E> environment class
+     * @param <V> return value of a single resolvable
+     * @param <R> resolvable class
+     */
+    @FunctionalInterface
     public static interface Batched<E, R, V> extends ResolverFunction<E, R, V> {
         Results<R, V> resolveAll(E environment, List<R> resolvables);
 

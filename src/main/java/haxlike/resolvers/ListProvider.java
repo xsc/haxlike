@@ -44,6 +44,13 @@ public class ListProvider<E, V>
         return declareProvider(providerName, f);
     }
 
+    public static <V> ListProvider<Object, V> declare(
+        String providerName,
+        ResolverFunction.ProviderNoEnv<List<V>> f
+    ) {
+        return declareProvider(providerName, f);
+    }
+
     // --- Resolvable
     public static class ToResolve<V>
         extends ResolvableValue<Object, List<V>>
