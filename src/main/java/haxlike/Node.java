@@ -406,4 +406,33 @@ public interface Node<T> {
             }
         }
     }
+
+    /**
+     * Convenience trait for values that need to be combinable with nodes. Avoids
+     * explicit wrapping using {@link Nodes#value(Object)}.
+     *
+     * @param <T> self-reference for value class
+     */
+    public interface Data<T extends Data<T>> extends Node<T> {
+        @Override
+        @SuppressWarnings("unchecked")
+        default T getValue() {
+            return (T) this;
+        }
+
+        @Override
+        default boolean isResolved() {
+            return true;
+        }
+
+        @Override
+        default List<Resolvable<?>> getResolvables() {
+            return List.nil();
+        }
+
+        @Override
+        default Node<T> injectValues(Results<Resolvable<?>, ?> results) {
+            return this;
+        }
+    }
 }
