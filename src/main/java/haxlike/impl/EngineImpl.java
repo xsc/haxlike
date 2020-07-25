@@ -14,18 +14,28 @@ import haxlike.resolvers.ResolverDefinition;
 import haxlike.resolvers.Results;
 import java.util.Optional;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
-import lombok.extern.slf4j.Slf4j;
 
 @Value
 @Builder
-@Slf4j
 class EngineImpl<E> implements Engine {
+    @NonNull
+    EngineLogger logger;
+
+    @NonNull
     EngineRegistry<E> registry;
-    E environment;
+
+    @NonNull
     ResolutionStrategy resolutionStrategy;
+
+    @NonNull
     SelectionStrategy selectionStrategy;
-    int maxIterationCount;
+
+    @NonNull
+    Integer maxIterationCount;
+
+    E environment;
 
     @Override
     public <T> T resolve(Node<T> node, EngineCache cache) {
@@ -92,7 +102,7 @@ class EngineImpl<E> implements Engine {
         List<R> resolvables
     ) {
         final List<List<R>> allBatches = resolvables
-            .groupBy(r -> r.getResolvableKey(), Ord.stringOrd)
+            .groupBy(Resolvable::getResolvableKey, Ord.stringOrd)
             .values();
         return selectionStrategy.select(allBatches);
     }
@@ -122,13 +132,13 @@ class EngineImpl<E> implements Engine {
 
     // --- Logging
     private void logIteration(int iterationCount) {
-        log.trace("--- Iteration #{}", iterationCount);
+        log("--- Iteration #{}", iterationCount);
     }
 
     private <V, R extends Resolvable<V>> List<R> logResolvables(
         List<R> resolvables
     ) {
-        log.trace("Resolvables: {}", resolvables);
+        log("Resolvables: {}", resolvables);
         return resolvables;
     }
 
@@ -136,14 +146,11 @@ class EngineImpl<E> implements Engine {
         List<R> resolvables
     ) {
         if (resolvables.isEmpty()) {
-            log.trace("=> All results are already cached.");
+            log("=> All results are already cached.");
         } else if (resolvables.length() == 1) {
-            log.trace("=> 1 value needs to be resolved.");
+            log("=> 1 value needs to be resolved.");
         } else {
-            log.trace(
-                "=> {} values need to be resolved.",
-                resolvables.length()
-            );
+            log("=> {} values need to be resolved.", resolvables.length());
         }
         return resolvables;
     }
@@ -154,8 +161,12 @@ class EngineImpl<E> implements Engine {
         if (batches.isNotEmpty()) {
             batches
                 .zipIndex()
-                .forEach(p -> log.trace("=> Batch[{}]: {}", p._2(), p._1()));
+                .forEach(p -> log("=> Batch[{}]: {}", p._2(), p._1()));
         }
         return batches;
+    }
+
+    private void log(String fmt, Object... args) {
+        this.getLogger().log(fmt, args);
     }
 }

@@ -21,9 +21,12 @@ import lombok.With;
 public class EngineBuilderImpl<E> implements EngineBuilder<E> {
     private static final int DEFAULT_MAX_ITERATION_COUNT = 16;
 
-    // --- Internal Registry
+    // --- Internal Data
     @With(AccessLevel.PRIVATE)
     private final EngineRegistry<E> registry;
+
+    @With(AccessLevel.PRIVATE)
+    private final EngineLogger logger;
 
     // --- Values that can be injected directly
     // These are exposed using the `@With` annotation on class-level.
@@ -34,6 +37,7 @@ public class EngineBuilderImpl<E> implements EngineBuilder<E> {
     public EngineBuilderImpl() {
         this(
             new EngineRegistry<>(),
+            new EngineLogger.NoOp(),
             ResolutionStrategies.defaultStrategy(),
             SelectionStrategies.defaultStrategy(),
             DEFAULT_MAX_ITERATION_COUNT
@@ -49,6 +53,11 @@ public class EngineBuilderImpl<E> implements EngineBuilder<E> {
     }
 
     @Override
+    public EngineBuilder<E> withTraceLogging() {
+        return this.withLogger(new EngineLogger.Slf4j());
+    }
+
+    @Override
     public Engine build(E environment) {
         return EngineImpl
             .<E>builder()
@@ -57,6 +66,7 @@ public class EngineBuilderImpl<E> implements EngineBuilder<E> {
             .resolutionStrategy(resolutionStrategy)
             .selectionStrategy(selectionStrategy)
             .maxIterationCount(maxIterationCount)
+            .logger(logger)
             .build();
     }
 }

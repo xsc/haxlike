@@ -51,6 +51,12 @@ public interface EngineBuilder<E> {
     EngineBuilder<E> withMaxIterationCount(int depth);
 
     /**
+     * Enable TRACE logging (via Slf4j) on the engine.
+     * @return a new engine builder that will log using the TRACE log level
+     */
+    EngineBuilder<E> withTraceLogging();
+
+    /**
      * Build an engine bound to the given environment.
      * @param environment the environment that will be available to resolvers.
      * @return an Engine instance
